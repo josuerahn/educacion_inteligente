@@ -270,8 +270,8 @@
                     <li><strong>Nombre:</strong> {{ auth()->user()?->name ?? '-' }}</li>
                     <li><strong>Email:</strong> {{ auth()->user()?->email ?? '-' }}</li>
                     <li><strong>Fecha de Nacimiento:</strong> {{ auth()->user()?->fecha_nacimiento ?? '-' }}</li>
-                    <li><strong>Tutoria:</strong> {{ auth()->user()?->tutoria?->name ?? '-' }}</li>
-                    <li><strong>Descripción de la Tutoria:</strong> {{ auth()->user()?->tutoria?->description ?? '-' }}</li>
+                    <li><strong>Tutoria:</strong> {{ auth()->user()?->tutorias->name ?? '-' }}</li>
+                    <li><strong>Descripción de la Tutoria:</strong> {{ auth()->user()?->tutoria->description ?? '-' }}</li>
                 </ul>
                 <div class="flex justify-end mt-4">
                     <button type="button" wire:click="cerrarModales" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">Cerrar</button>
