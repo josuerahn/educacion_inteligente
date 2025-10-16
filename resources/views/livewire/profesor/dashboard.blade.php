@@ -216,19 +216,9 @@
                 <ul class="space-y-2">
                     <li><strong>Nombre:</strong> {{ $alumnoSeleccionado->name ?? '-' }}</li>
                     <li><strong>Email:</strong> {{ $alumnoSeleccionado->email ?? '-' }}</li>
-                    <li><strong>WhatsApp:</strong>
-                        @if($alumnoSeleccionado->whatsapp)
-                        <a href="https://wa.me/{{ $alumnoSeleccionado->whatsapp }}" target="_blank" class="text-green-600 underline" rel="noopener">
-                            {{ $alumnoSeleccionado->whatsapp }}
-                        </a>
-                        @else
-                        -
-                        @endif
                     </li>
                     <li><strong>DNI:</strong> {{ $alumnoSeleccionado->dni ?? '-' }}</li>
                     <li><strong>Fecha de Nacimiento:</strong> {{ $alumnoSeleccionado->fecha_nacimiento ?? '-' }}</li>
-                    <li><strong>Comisión:</strong> {{ $alumnoSeleccionado->comision ?? '-' }}</li>
-                    <li><strong>Carrera:</strong> {{ $alumnoSeleccionado->carrera ?? '-' }}</li>
                 </ul>
             </div>
         </div>
@@ -242,9 +232,6 @@
                 <form wire:submit.prevent="guardarPerfil">
                     <div class="mb-2"><label class="block font-bold">Nombre</label><input type="text" wire:model.defer="profesorEdit.name" class="w-full border rounded p-2"></div>
                     <div class="mb-2"><label class="block font-bold">Email</label><input type="email" wire:model.defer="profesorEdit.email" class="w-full border rounded p-2"></div>
-                    <div class="mb-2"><label class="block font-bold">DNI</label><input type="text" wire:model.defer="profesorEdit.dni" class="w-full border rounded p-2"></div>
-                    <div class="mb-2"><label class="block font-bold">WhatsApp</label><input type="text" wire:model.defer="profesorEdit.whatsapp" class="w-full border rounded p-2"></div>
-                    <div class="mb-2"><label class="block font-bold">Fecha de Nacimiento</label><input type="date" wire:model.defer="profesorEdit.fecha_nacimiento" class="w-full border rounded p-2"></div>
                     <div class="mb-2"><label class="block font-bold">Nueva Contraseña</label><input type="password" wire:model.defer="profesorEdit.password" class="w-full border rounded p-2" autocomplete="new-password"></div>
                     <div class="mb-2"><label class="block font-bold">Foto de Perfil</label><input type="file" wire:model="fotoPerfilProfesor" class="w-full" accept="image/*"></div>
                     <div class="flex gap-2 mt-4">
@@ -282,11 +269,9 @@
                 <ul class="space-y-2">
                     <li><strong>Nombre:</strong> {{ auth()->user()?->name ?? '-' }}</li>
                     <li><strong>Email:</strong> {{ auth()->user()?->email ?? '-' }}</li>
-                    <li><strong>DNI:</strong> {{ auth()->user()?->dni ?? '-' }}</li>
-                    <li><strong>WhatsApp:</strong> {{ auth()->user()?->whatsapp ?? '-' }}</li>
                     <li><strong>Fecha de Nacimiento:</strong> {{ auth()->user()?->fecha_nacimiento ?? '-' }}</li>
-                    <li><strong>Curso:</strong> {{ auth()->user()?->course?->name ?? '-' }}</li>
-                    <li><strong>Descripción del Curso:</strong> {{ auth()->user()?->course?->description ?? '-' }}</li>
+                    <li><strong>Tutoria:</strong> {{ auth()->user()?->tutoria?->name ?? '-' }}</li>
+                    <li><strong>Descripción de la Tutoria:</strong> {{ auth()->user()?->tutoria?->description ?? '-' }}</li>
                 </ul>
                 <div class="flex justify-end mt-4">
                     <button type="button" wire:click="cerrarModales" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">Cerrar</button>

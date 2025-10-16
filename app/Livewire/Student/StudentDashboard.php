@@ -41,7 +41,7 @@ public ?string $notion    = null;
 {
     $user = Auth::user();
     if ($user instanceof User) {
-        $this->alumno = $user->load('course');
+        $this->alumno = $user->load('tutoria'); // Cargar la relación 'tutoria'
         $this->fill([
             'nombre'   => $this->alumno->name ?? '',
             'email'    => $this->alumno->email ?? '',
@@ -140,7 +140,7 @@ public function actualizarDatos()
     public function actualizarFoto()
     {
         $this->validate([
-            'nuevaFoto' => 'nullable|image|max:2048', // 2MB máximo
+            'nuevaFoto' => 'nullable|image|max:4048', // 4MB máximo
         ]);
 
         if ($this->nuevaFoto) {
@@ -156,7 +156,7 @@ public function actualizarDatos()
     public function render()
     {
         $profesor = User::where('role_id', 2)
-            ->where('course_id', $this->alumno->course_id)
+            ->where('tutoria_id', $this->alumno->tutoria_id)
             ->first();
 
         return view('livewire.student.student-dashboard', [

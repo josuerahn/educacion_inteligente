@@ -173,7 +173,7 @@ class Dashboard extends Component
         $profesor = Auth::user();
         $alumnos = User::with('socialProfile')
             ->where('role_id', 3)
-            ->where('course_id', $profesor->course_id)
+            ->where('tutoria_id', $profesor->tutoria_id)
             ->where(function ($query) {
                 $q = $this->q;
                 $query->where('name', 'like', "%{$q}%")
@@ -186,7 +186,7 @@ class Dashboard extends Component
         if (strlen($this->q) >= 4) {
             $sugerencias = User::with('socialProfile')
                 ->where('role_id', 3)
-                ->where('course_id', $profesor->course_id)
+                ->where('tutoria_id', $profesor->tutoria_id)
                 ->where(function ($qq) {
                     $qq->where('name', 'like', "%{$this->q}%")
                        ->orWhere('email', 'like', "%{$this->q}%");

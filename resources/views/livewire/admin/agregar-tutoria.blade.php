@@ -1,5 +1,5 @@
 @extends('components.layouts.admin-layout')
-@section('title', 'Agregar Curso')
+@section('title', 'Agregar Tutoria')
 @section('content')
 <div class="w-full min-h-screen flex items-center justify-center bg-gray-50 px-2 sm:px-0">
     <div class="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg">
@@ -7,7 +7,7 @@
         <form method="POST" action="{{ route('admin.cursos.store') }}" class="space-y-4">
             @csrf
             <div>
-                <input type="text" name="name" placeholder="Nombre del curso" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required value="{{ old('name') }}">
+                <input type="text" name="name" placeholder="Nombre de Tutoria" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required value="{{ old('name') }}">
                 @error('name')
                     <div class="mb-2 text-red-600 text-sm">{{ $message }}</div>
                 @enderror

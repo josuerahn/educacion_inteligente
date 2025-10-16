@@ -1,13 +1,13 @@
 <?php
 namespace Database\Seeders;
 use Illuminate\Database\Seeder;
-use App\Models\Course;
+use App\Models\Tutoria;
 
 class CourseSeeder extends Seeder
 {
     public function run()
     {
-        Course::create(['name' => 'Curso 1', 'description' => 'Descripción del curso 1']);
-        Course::create(['name' => 'Curso 2', 'description' => 'Descripción del curso 2']);
+        Tutoria::create(['name' => 'Curso 1', 'description' => 'Descripción del curso 1']);
+        Tutoria::create(['name' => 'Curso 2', 'description' => 'Descripción del curso 2']);
     }
 }

@@ -17,13 +17,13 @@
             </div>
             <div>
                 <select name="course_id" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required>
-                    <option value="">Selecciona un curso</option>
-                    @foreach($cursos as $curso)
+                    <option value="">Selecciona una Tutoria</option>
+                    @foreach($tutorias as $tutoria)
                         @php
-                            $ocupado = \App\Models\User::where('role_id', 2)->where('course_id', $curso->id)->exists();
+                            $ocupado = \App\Models\User::where('role_id', 2)->where('tutoria_id', $tutoria->id)->exists();
                         @endphp
-                        <option value="{{ $curso->id }}" @if($ocupado) disabled style="background:#f8d7da;color:#721c24;" @endif>
-                            {{ $curso->name }} @if($ocupado) (Ocupado) @endif
+                        <option value="{{ $tutoria->id }}" @if($ocupado) disabled style="background:#f8d7da;color:#721c24;" @endif>
+                            {{ $tutoria->name }} @if($ocupado) (Ocupado) @endif
                         </option>
                     @endforeach
                 </select>
