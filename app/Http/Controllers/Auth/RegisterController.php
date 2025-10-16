@@ -54,8 +54,6 @@ class RegisterController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'profile_photo' => $photoPath,
-                'whatsapp' => $request->whatsapp,
-                'comision' => $request->comision,
                 'dni' => $request->dni,
                 'carrera' => $request->carrera,
                 'fecha_nacimiento' => $request->fecha_nacimiento,

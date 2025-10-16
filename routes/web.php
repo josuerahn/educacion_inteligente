@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -38,11 +37,19 @@ Route::middleware(['auth'])->group(function () {
 // --------------------
 // Dashboard del Alumno con Livewire
 // --------------------
-Route::middleware(['auth'])->group(function () {
-    Route::get('/alumno/dashboard', \App\Livewire\Student\StudentDashboard::class)
-        ->name('student.student-dashboard');
-});
+Route::get('/alumno/dashboard', \App\Livewire\Student\StudentDashboard::class)
+    ->name('student.student-dashboard');
 
+// Ruta demo público para vista de alumno (sin auth)
+Route::get('/alumno/demo', function () {
+    $tutorias = ['Programación','Metodología','Matemáticas','Comunicación','Desarrollo web'];
+    $profesor = \App\Models\User::where('role_id', 2)->first(); // si hay profesor lo muestra, sino null
+    $alumno = (object)[ 'name' => 'Alumno Demo', 'email' => 'alumno@demo.local' ]; // datos demo para la vista
+
+    return view('livewire.student.student-dashboard', compact('tutorias', 'profesor', 'alumno'));
+})->name('student.demo');
+
+    
 // --------------------
 // Dashboard del Admin con Livewire
 // --------------------
