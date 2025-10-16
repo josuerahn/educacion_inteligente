@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -20,7 +21,33 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photos',
+        'whatsapp',
+        'comision',
+        'dni',
+        'carrera',
+        'fecha_nacimiento',
+        'role_id',
+        'tutoria_id',
+        
     ];
+    //relacion con rol
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+    //relacion con cursos
+    public function course()
+{
+    return $this->belongsTo(Tutoria::class);
+}
+//relacion con redes sociales
+
+    public function socialProfiles()
+{
+    return $this->hasMany(\App\Models\SocialProfile::class);
+}
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -31,6 +58,12 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    // Relación hasOne para socialProfile (singular)
+    public function socialProfile()
+    {
+        return $this->hasOne(\App\Models\SocialProfile::class);
+    }
 
     /**
      * Get the attributes that should be cast.
