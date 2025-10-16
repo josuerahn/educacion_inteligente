@@ -12,6 +12,7 @@ use App\Livewire\Profesor\Dashboard;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+Route::get('/health', fn() => 'ok');
 
 // --------------------
 // Autenticación
