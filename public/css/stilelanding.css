@@ -1,0 +1,16 @@
+/* Archivo CSS compilado mínimo de fallback para desarrollo rápido */
+:root{--mentoria-primary:#f4a261;--mentoria-primary-600:#e5812e;--mentoria-ink:#212529;--mentoria-muted:#6c757d;--mentoria-bg:#fff7f0;--mentoria-card:#ffffff;--mentoria-badge:#2152ff}
+body{background-color:#fff;color:var(--mentoria-ink)}
+.section-light{background:var(--mentoria-bg)}
+.btn-cta{display:inline-block;padding:.75rem 1.25rem;background:var(--mentoria-primary);border:1px solid var(--mentoria-primary);color:#fff;border-radius:.375rem}
+.btn-cta:hover{background:var(--mentoria-primary-600);border-color:var(--mentoria-primary-600)}
+.badge-mentoria{background:var(--mentoria-badge);color:#fff;border-radius:999px;padding:.5rem .75rem;font-weight:600;font-size:.85rem}
+.card-mentoria{border:1px solid rgba(0,0,0,.05);border-radius:1rem;box-shadow:0 6px 24px rgba(0,0,0,.05);padding:1rem}
+.rounded-2xl{border-radius:1rem!important}
+.hero-bulb{width:40px;height:40px;color:var(--mentoria-primary)}
+.avatar{width:56px;height:56px;object-fit:cover;border-radius:50%}
+.list-check>li{position:relative;padding-left:1.75rem}
+.list-check>li::before{content:"✔";position:absolute;left:0;top:0;color:var(--mentoria-primary);font-weight:700}
+.navbar-brand span{color:var(--mentoria-primary-600)}
+.footer-link{color:var(--mentoria-muted);text-decoration:none}
+.footer-link:hover{color:var(--mentoria-primary-600)}
