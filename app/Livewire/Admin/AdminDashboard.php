@@ -18,7 +18,7 @@ class AdminDashboard extends Component
         'password' => '',
         'tutoria_id' => '',
     ];
-    public $curso = [
+    public $tutoria = [
         'name' => '',
         'description' => '',
     ];
@@ -73,10 +73,10 @@ class AdminDashboard extends Component
             'tutoria.name.unique' => 'El nombre de la tutoria ya existe.',
         ]);
         Tutoria::create([
-            'name' => $this->curso['name'],
-            'description' => $this->curso['description'],
+            'name' => $this->tutoria['name'],
+            'description' => $this->tutoria['description'],
         ]);
-        $this->curso = ['name' => '', 'description' => ''];
+        $this->tutoria = ['name' => '', 'description' => ''];
         $this->hideAddCursoModal();
     }
 
@@ -101,9 +101,9 @@ class AdminDashboard extends Component
             session()->flash('error', 'Este curso está ocupado por un profesor, no se puede eliminar.');
             return;
         }
-        $tutoria = Tutoria::find($id);
-        if ($tutoria) {
-            $tutoria->delete();
+        $tutorias = Tutoria::find($id);
+        if ($tutorias) {
+            $tutorias->delete();
             session()->flash('mensaje', 'Tutoria eliminada correctamente.');
         }
     }
@@ -111,7 +111,7 @@ class AdminDashboard extends Component
     public function render()
     {
         $profesores = User::where('role_id', 2)->with('tutoria')->get();
-        $tutoria = Tutoria::all();
+        $tutorias = Tutoria::all();
         return view('livewire.admin.dashboard', compact('profesores', 'tutoria'));
     }
 }

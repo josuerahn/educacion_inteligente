@@ -66,7 +66,7 @@
                                 @if($ocupado)
                                     <button type="button" class="btn btn-danger btn-sm bg-gray-400 text-white px-4 py-2 rounded-xl w-full sm:w-auto cursor-not-allowed" disabled title="No se puede eliminar el curso porque tiene un profesor asignado">Eliminar</button>
                                 @else
-                                    <form method="POST" action="{{ route('admin.delete.curso', $tutoria->id) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('admin.delete.tutoria', $tutoria->id) }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm bg-red-600 text-white px-4 py-2 rounded-xl w-full sm:w-auto" onclick="return confirm('¿Seguro que quieres eliminar la Tutoria {{ $tutoria->name }}?')">Eliminar</button>

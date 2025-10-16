@@ -3,8 +3,8 @@
 @section('content')
 <div class="w-full min-h-screen flex items-center justify-center bg-gray-50 px-2 sm:px-0">
     <div class="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold mb-4 text-center">Agregar Curso</h2>
-        <form method="POST" action="{{ route('admin.cursos.store') }}" class="space-y-4">
+        <h2 class="text-2xl font-bold mb-4 text-center">Agregar Tutoria</h2>
+        <form method="POST" action="{{ route('admin.tutorias.store') }}" class="space-y-4">
             @csrf
             <div>
                 <input type="text" name="name" placeholder="Nombre de Tutoria" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required value="{{ old('name') }}">

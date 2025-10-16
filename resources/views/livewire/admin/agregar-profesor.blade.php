@@ -16,7 +16,7 @@
                 <input type="password" name="password" placeholder="Contraseña" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required>
             </div>
             <div>
-                <select name="course_id" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required>
+                <select name="tutoria_id" class="w-full mb-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-200 focus:outline-none transition" required>
                     <option value="">Selecciona una Tutoria</option>
                     @foreach($tutorias as $tutoria)
                         @php
@@ -27,7 +27,7 @@
                         </option>
                     @endforeach
                 </select>
-                @error('profesor.course_id')
+                @error('profesor.tutoria_id')
                     <div class="mb-2 text-red-600 text-sm">{{ $message }}</div>
                 @enderror
             </div>

@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('role_id')->constrained('roles');
+            $table->unsignedBigInteger('tutoria_id')->nullable();
+            $table->foreign('tutoria_id')->references('id')->on('tutorias')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -48,15 +48,15 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function() {
         $profesores = \App\Models\User::where('role_id', 2)->get();
-        $cursos = \App\Models\Tutoria::all();
-        return view('livewire.admin.dashboard', compact('profesores', 'cursos'));
+        $tutorias = \App\Models\Tutoria::all();
+        return view('livewire.admin.dashboard', compact('profesores', 'tutorias'));
     })->name('admin.dashboard');
 });
 // Rutas para agregar profesor y curso desde el panel admin
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/profesores/agregar', function() {
-        $cursos = \App\Models\Tutoria::all();
+        $tutorias = \App\Models\Tutoria::all();
         return view('livewire.admin.agregar-profesor', compact('tutorias'));
     })->name('admin.profesores.create');
 
@@ -95,8 +95,8 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar el profesor.');
     })->name('admin.delete.profesor');
 
-
-    Route::get('/admin/cursos/agregar', function() {
+// Rutas para agregar y eliminar tutorias desde el panel admin
+    Route::get('/admin/tutoria/agregar', function() {
         return view('livewire.admin.agregar-tutoria');
     })->name('admin.tutorias.create');
 
@@ -113,7 +113,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
         // Redirigir al dashboard y mostrar mensaje
         return redirect()->route('admin.dashboard')->with('success', 'Tutoria agregado correctamente.');
-    })->name('admin.tutoria.store');
+    })->name('admin.tutorias.store');
 
     // Ruta para eliminar curso
     Route::delete('/admin/tutorias/{id}/eliminar', function($id) {
