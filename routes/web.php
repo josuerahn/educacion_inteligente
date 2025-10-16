@@ -1,9 +1,13 @@
 <?php
 
+use App\Livewire\Profesor\Tareas;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Livewire\Profesor\Dashboard;
+use App\Http\Controllers\Profesor\TareaController;
+use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
+use App\Livewire\Profesor\Tareas as ProfesorTareas;
+use App\Livewire\Student\StudentDashboard;
 
 // --------------------
 // Página principal redirige al login
@@ -26,51 +30,55 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // --------------------
-// Dashboard del Profesor con Livewire
+// Dashboard del Profesor y CRUD de tareas
 // --------------------
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profesor/dashboard', \App\Livewire\profesor\Dashboard::class)
-        ->name('profesor.dashboard');
+    Route::view('/profesor/tareas', 'livewire.profesor.tareas')
+        ->name('profesor.tareas');
 });
+
 
 // --------------------
 // Dashboard del Alumno con Livewire
 // --------------------
-Route::get('/alumno/dashboard', \App\Livewire\Student\StudentDashboard::class)
-        ->name('student.student-dashboard');
+Route::prefix('alumno')->middleware(['auth'])->name('student.')->group(function () {
+    Route::get('/dashboard', StudentDashboard::class)
+        ->name('student-dashboard');
+});
 
 // --------------------
-// Dashboard del Admin con Livewire
+// Dashboard del Admin con Livewire y gestión de profesores y tutorias
 // --------------------
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', function() {
+Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+
+    // Dashboard Admin
+    Route::get('/dashboard', function () {
         $profesores = \App\Models\User::where('role_id', 2)->get();
         $tutorias = \App\Models\Tutoria::all();
         return view('livewire.admin.dashboard', compact('profesores', 'tutorias'));
-    })->name('admin.dashboard');
-});
-// Rutas para agregar profesor y curso desde el panel admin
-Route::middleware(['auth'])->group(function () {
+    })->name('dashboard');
 
-    Route::get('/admin/profesores/agregar', function() {
+    // Profesor: agregar
+    Route::get('/profesores/agregar', function () {
         $tutorias = \App\Models\Tutoria::all();
         return view('livewire.admin.agregar-profesor', compact('tutorias'));
-    })->name('admin.profesores.create');
+    })->name('profesores.create');
 
-    Route::post('/admin/profesores/agregar', function(\Illuminate\Http\Request $request) {
+    Route::post('/profesores/agregar', function (\Illuminate\Http\Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'tutoria_id' => 'required|exists:tutorias,id',
         ]);
-        // Validar que el curso no tenga ya un profesor asignado
+
         $yaAsignado = \App\Models\User::where('role_id', 2)
             ->where('tutoria_id', $request->tutoria_id)
             ->exists();
         if ($yaAsignado) {
             return redirect()->route('admin.dashboard')->with('error', 'Ese curso ya tiene un profesor asignado.');
         }
+
         \App\Models\User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -78,57 +86,48 @@ Route::middleware(['auth'])->group(function () {
             'role_id' => 2,
             'tutoria_id' => $request->tutoria_id,
         ]);
-        // Redirigir al dashboard y mostrar mensaje
-        return redirect()->route('admin.dashboard')->with('success', 'Profesor agregado correctamente.');
-    })->name('admin.profesores.store');
 
-    // Ruta para eliminar profesor
-    Route::delete('/admin/profesores/{id}/eliminar', function($id) {
+        return redirect()->route('admin.dashboard')->with('success', 'Profesor agregado correctamente.');
+    })->name('profesores.store');
+
+    // Profesor: eliminar
+    Route::delete('/profesores/{id}/eliminar', function ($id) {
         $profesor = \App\Models\User::where('id', $id)->where('role_id', 2)->first();
         if ($profesor) {
             $profesor->delete();
             return redirect()->route('admin.dashboard')->with('success', 'Profesor eliminado correctamente.');
         }
         return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar el profesor.');
-    })->name('admin.delete.profesor');
+    })->name('delete.profesor');
 
-// Rutas para agregar y eliminar tutorias desde el panel admin
-    Route::get('/admin/tutoria/agregar', function() {
+    // Tutorias: agregar
+    Route::get('/tutoria/agregar', function () {
         return view('livewire.admin.agregar-tutoria');
-    })->name('admin.tutorias.create');
+    })->name('tutorias.create');
 
-    Route::post('/admin/tutoria/agregar', function(\Illuminate\Http\Request $request) {
+    Route::post('/tutoria/agregar', function (\Illuminate\Http\Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:tutorias,name',
             'description' => 'required|string',
         ], [
             'name.unique' => 'Este nombre ya existe',
         ]);
+
         \App\Models\Tutoria::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
         ]);
-        // Redirigir al dashboard y mostrar mensaje
-        return redirect()->route('admin.dashboard')->with('success', 'Tutoria agregado correctamente.');
-    })->name('admin.tutorias.store');
 
-    // Ruta para eliminar curso
-    Route::delete('/admin/tutorias/{id}/eliminar', function($id) {
+        return redirect()->route('admin.dashboard')->with('success', 'Tutoria agregado correctamente.');
+    })->name('tutorias.store');
+
+    // Tutorias: eliminar
+    Route::delete('/tutorias/{id}/eliminar', function ($id) {
         $curso = \App\Models\Tutoria::find($id);
         if ($curso) {
             $curso->delete();
             return redirect()->route('admin.dashboard')->with('success', 'Tutoria eliminado correctamente.');
         }
         return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar la Tutoria.');
-    })->name('admin.delete.tutoria');
+    })->name('delete.tutoria');
 });
-
-// Demo Alumno
-Route::get('/alumno/demo', function () {
-    $tutorias = ['Programación','Metodología','Matemáticas','Comunicación','Desarrollo web'];
-    $profesor = \App\Models\User::where('role_id', 2)->first();
-    // pasar un objeto simple para evitar null en la vista
-    $alumno = (object)[ 'name' => 'Alumno Demo', 'email' => 'alumno@demo.local' ];
-
-    return view('livewire.student.student-dashboard', compact('tutorias', 'profesor', 'alumno'));
-})->name('student.demo');
