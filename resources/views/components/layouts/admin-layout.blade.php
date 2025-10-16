@@ -12,7 +12,7 @@
         <span class="font-bold text-xl mb-2 sm:mb-0">Admin Panel</span>
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
             <a href="{{ route('admin.profesores.create') }}" class="px-4 py-2 rounded-lg font-semibold shadow bg-blue-800 text-white hover:bg-blue-900 transition">Agregar Profesor</a>
-            <a href="{{ route('admin.tutorias.create') }}" class="px-4 py-2 rounded-lg font-semibold shadow bg-green-200 text-green-900 hover:bg-green-400 transition">Agregar Curso</a>
+            <a href="{{ route('admin.tutorias.create') }}" class="px-4 py-2 rounded-lg font-semibold shadow bg-green-200 text-green-900 hover:bg-green-400 transition">Agregar Tutoria</a>
             <form method="POST" action="{{ route('logout') }}" class="w-full sm:w-auto" style="display:inline">
                 @csrf
                 <button type="submit" class="px-4 py-2 rounded-lg font-semibold shadow bg-red-600 text-white hover:bg-red-800 transition w-full sm:w-auto">Cerrar sesión</button>
