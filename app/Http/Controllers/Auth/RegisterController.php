@@ -26,16 +26,12 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => [ 'required', 'string','confirmed', 'min:6',],
-            'whatsapp' => 'required|string|unique:users,whatsapp',
-            'dni' => 'required|string|unique:users,dni',
-            'carrera' => 'required|string',
             'fecha_nacimiento' => 'required|date',
-            'course_id' => 'required|exists:courses,id',
-            'profile_photo' => 'required|image|max:5048',
+            'profile_photo' => 'nullable|image|max:5048',
         ], [
             'email.unique' => 'Este correo ya existe.',
             'dni.unique' => 'Este DNI ya existe.',
-            'whatsapp.unique' => 'Este número de WhatsApp ya existe.',
+           
         ]);
 
 
@@ -54,23 +50,13 @@ class RegisterController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'profile_photo' => $photoPath,
-                'whatsapp' => $request->whatsapp,
-                'comision' => $request->comision,
-                'dni' => $request->dni,
-                'carrera' => $request->carrera,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
-                'course_id'=>$request->tutoria_id,
-                'role_id' => 3,
+               
+                    // asigna rol 'Alumno' si existe, si no usar 3 por defecto
+                    'role_id' => Role::where('name', 'Alumno')->value('id') ?? 3,
             ]);
 
-            SocialProfile::create([
-                'user_id' => $user->id,
-                'linkedin' => $request->linkedin ?? null,
-                'github' => $request->github ?? null,
-                'gitlab' => $request->gitlab ?? null,
-                'wordpress' => $request->wordpress ?? null,
-                'notion' => $request->notion ?? null,
-            ]);
+           
 
             DB::commit();
             // Si quieres loguear automáticamente al usuario tras el registro:
