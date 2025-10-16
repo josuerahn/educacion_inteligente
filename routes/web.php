@@ -11,7 +11,6 @@ use App\Livewire\Profesor\Dashboard;
 Route::get('/', function () {
     return redirect()->route('login');
 });
-Route::get('/health', fn() => 'ok');
 
 // --------------------
 // Autenticación
@@ -38,18 +37,8 @@ Route::middleware(['auth'])->group(function () {
 // Dashboard del Alumno con Livewire
 // --------------------
 Route::get('/alumno/dashboard', \App\Livewire\Student\StudentDashboard::class)
-    ->name('student.student-dashboard');
+        ->name('student.student-dashboard');
 
-// Ruta demo público para vista de alumno (sin auth)
-Route::get('/alumno/demo', function () {
-    $tutorias = ['Programación','Metodología','Matemáticas','Comunicación','Desarrollo web'];
-    $profesor = \App\Models\User::where('role_id', 2)->first(); // si hay profesor lo muestra, sino null
-    $alumno = (object)[ 'name' => 'Alumno Demo', 'email' => 'alumno@demo.local' ]; // datos demo para la vista
-
-    return view('livewire.student.student-dashboard', compact('tutorias', 'profesor', 'alumno'));
-})->name('student.demo');
-
-    
 // --------------------
 // Dashboard del Admin con Livewire
 // --------------------
@@ -133,3 +122,13 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar la Tutoria.');
     })->name('admin.delete.tutoria');
 });
+
+// Demo Alumno
+Route::get('/alumno/demo', function () {
+    $tutorias = ['Programación','Metodología','Matemáticas','Comunicación','Desarrollo web'];
+    $profesor = \App\Models\User::where('role_id', 2)->first();
+    // pasar un objeto simple para evitar null en la vista
+    $alumno = (object)[ 'name' => 'Alumno Demo', 'email' => 'alumno@demo.local' ];
+
+    return view('livewire.student.student-dashboard', compact('tutorias', 'profesor', 'alumno'));
+})->name('student.demo');

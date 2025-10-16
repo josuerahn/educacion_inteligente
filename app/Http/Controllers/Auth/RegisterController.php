@@ -40,7 +40,8 @@ class RegisterController extends Controller
 
         $photoPath = null;
         if ($request->hasFile('profile_photo')) {
-            $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
+            // guarda en storage/app/public/profiles/xxx.jpg
+            $photoPath = $request->file('profile_photo')->store('profiles', 'public');
         }
 
         DB::beginTransaction();
