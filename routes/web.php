@@ -49,16 +49,16 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function() {
         $profesores = \App\Models\User::where('role_id', 2)->get();
-        $cursos = \App\Models\Course::all();
-        return view('livewire.admin.dashboard', compact('profesores', 'cursos'));
+        $tutorias = \App\Models\Tutoria::all();
+        return view('livewire.admin.dashboard', compact('profesores', 'tutorias'));
     })->name('admin.dashboard');
 });
 // Rutas para agregar profesor y curso desde el panel admin
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/profesores/agregar', function() {
-        $cursos = \App\Models\Course::all();
-        return view('livewire.admin.agregar-profesor', compact('cursos'));
+        $tutorias = \App\Models\Tutoria::all();
+        return view('livewire.admin.agregar-profesor', compact('tutorias'));
     })->name('admin.profesores.create');
 
     Route::post('/admin/profesores/agregar', function(\Illuminate\Http\Request $request) {
@@ -66,11 +66,11 @@ Route::middleware(['auth'])->group(function () {
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'course_id' => 'required|exists:courses,id',
+            'tutoria_id' => 'required|exists:tutorias,id',
         ]);
         // Validar que el curso no tenga ya un profesor asignado
         $yaAsignado = \App\Models\User::where('role_id', 2)
-            ->where('course_id', $request->course_id)
+            ->where('tutoria_id', $request->tutoria_id)
             ->exists();
         if ($yaAsignado) {
             return redirect()->route('admin.dashboard')->with('error', 'Ese curso ya tiene un profesor asignado.');
@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'role_id' => 2,
-            'course_id' => $request->course_id,
+            'tutoria_id' => $request->tutoria_id,
         ]);
         // Redirigir al dashboard y mostrar mensaje
         return redirect()->route('admin.dashboard')->with('success', 'Profesor agregado correctamente.');
@@ -96,33 +96,33 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar el profesor.');
     })->name('admin.delete.profesor');
 
+// Rutas para agregar y eliminar tutorias desde el panel admin
+    Route::get('/admin/tutoria/agregar', function() {
+        return view('livewire.admin.agregar-tutoria');
+    })->name('admin.tutorias.create');
 
-    Route::get('/admin/cursos/agregar', function() {
-        return view('livewire.admin.agregar-curso');
-    })->name('admin.cursos.create');
-
-    Route::post('/admin/cursos/agregar', function(\Illuminate\Http\Request $request) {
+    Route::post('/admin/tutoria/agregar', function(\Illuminate\Http\Request $request) {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:courses,name',
+            'name' => 'required|string|max:255|unique:tutorias,name',
             'description' => 'required|string',
         ], [
             'name.unique' => 'Este nombre ya existe',
         ]);
-        \App\Models\Course::create([
+        \App\Models\Tutoria::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
         ]);
         // Redirigir al dashboard y mostrar mensaje
-        return redirect()->route('admin.dashboard')->with('success', 'Curso agregado correctamente.');
-    })->name('admin.cursos.store');
+        return redirect()->route('admin.dashboard')->with('success', 'Tutoria agregado correctamente.');
+    })->name('admin.tutorias.store');
 
     // Ruta para eliminar curso
-    Route::delete('/admin/cursos/{id}/eliminar', function($id) {
-        $curso = \App\Models\Course::find($id);
+    Route::delete('/admin/tutorias/{id}/eliminar', function($id) {
+        $curso = \App\Models\Tutoria::find($id);
         if ($curso) {
             $curso->delete();
-            return redirect()->route('admin.dashboard')->with('success', 'Curso eliminado correctamente.');
+            return redirect()->route('admin.dashboard')->with('success', 'Tutoria eliminado correctamente.');
         }
-        return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar el curso.');
-    })->name('admin.delete.curso');
+        return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar la Tutoria.');
+    })->name('admin.delete.tutoria');
 });

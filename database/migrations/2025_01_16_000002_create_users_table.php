@@ -17,14 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('profile_photos')->nullable();
-            $table->string('whatsapp')->nullable();
-            $table->string('comision')->nullable();
-            $table->string('dni')->nullable();
-            $table->string('carrera')->nullable();
-            $table->date('fecha_nacimiento')->nullable();
             $table->foreignId('role_id')->constrained('roles');
-            $table->foreignId('course_id')->nullable()->constrained('courses')->nullOnDelete();
+            $table->unsignedBigInteger('tutoria_id')->nullable();
+            $table->foreign('tutoria_id')->references('id')->on('tutorias')->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

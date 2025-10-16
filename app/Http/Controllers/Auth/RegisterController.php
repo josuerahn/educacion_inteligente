@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\SocialProfile;
-use App\Models\Course;
+use App\Models\Tutoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +16,7 @@ class RegisterController extends Controller
 {
    public function showRegistrationForm()
 {
-    $cursos = Course::all();
+    $cursos = Tutoria::all();
     return view('auth.register', compact('cursos'));
 }
 
@@ -59,7 +59,7 @@ class RegisterController extends Controller
                 'dni' => $request->dni,
                 'carrera' => $request->carrera,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
-                'course_id'=>$request->course_id,
+                'course_id'=>$request->tutoria_id,
                 'role_id' => 3,
             ]);
 

@@ -28,7 +28,7 @@ class User extends Authenticatable
         'carrera',
         'fecha_nacimiento',
         'role_id',
-        'course_id',
+        'tutoria_id',
         
     ];
     //relacion con rol
@@ -39,7 +39,7 @@ class User extends Authenticatable
     //relacion con cursos
     public function course()
 {
-    return $this->belongsTo(Course::class);
+    return $this->belongsTo(Tutoria::class);
 }
 //relacion con redes sociales
 
