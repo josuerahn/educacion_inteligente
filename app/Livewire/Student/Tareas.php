@@ -76,54 +76,65 @@ class Tareas extends Component
         $this->comentario = '';
     }
 
-    public function uploadEntrega($tareaId)
-    {
-        $this->validate();
+   public function uploadEntrega($tareaId)
+{
+    $this->validate();
 
     $user = Auth::user();
-        if (! $user) {
-            $this->addError('auth', 'Debe iniciar sesión.');
+    if (! $user) {
+        $this->addError('auth', 'Debe iniciar sesión.');
+        return;
+    }
+
+    $tarea = Tarea::find($tareaId);
+    if (! $tarea) {
+        $this->addError('tarea', 'Tarea no encontrada.');
+        return;
+    }
+
+    // Verificar que el alumno esté inscripto en la tutoría
+    if (Schema::hasTable((new TutoriaSolicitud)->getTable())) {
+        $isInscripto = TutoriaSolicitud::where('alumno_id', $user->id)
+            ->where('tutoria_id', $tarea->tutoria_id)
+            ->exists();
+        if (! $isInscripto) {
+            $this->addError('perm', 'No estás inscripto en la tutoría de esta tarea.');
             return;
         }
+    }
 
-        $tarea = Tarea::find($tareaId);
-        if (! $tarea) {
-            $this->addError('tarea', 'Tarea no encontrada.');
-            return;
-        }
+    // 🚫 Restricción: verificar si ya tiene una entrega previa para esta tarea
+    $yaEntregada = Entrega::where('tarea_id', $tarea->id)
+        ->where('alumno_id', $user->id)
+        ->exists();
 
-        // opcional: verificar que alumno esté inscripto en la tutoria
-        if (Schema::hasTable((new TutoriaSolicitud)->getTable())) {
-            $isInscripto = TutoriaSolicitud::where('alumno_id', $user->id)
-                ->where('tutoria_id', $tarea->tutoria_id)
-                ->exists();
-            if (! $isInscripto) {
-                $this->addError('perm', 'No estás inscripto en la tutoría de esta tarea.');
-                return;
-            }
-        }
+    if ($yaEntregada) {
+        $this->addError('entrega', 'Ya realizaste una entrega para esta tarea. No se puede volver a entregar.');
+        return;
+    }
 
-        // almacenar archivo en public (storage/app/public/entregas/...)
-        $path = $this->archivo->store('entregas', 'public');
+    // 📂 Guardar archivo
+    $path = $this->archivo->store('entregas', 'public');
 
-        // crear o actualizar entrega (si ya entregó, guardamos nueva fila)
-        $entrega = Entrega::create([
-            'tarea_id' => $tarea->id,
-            'alumno_id' => $user->id,
-            'archivo' => $path,
-            'comentario' => $this->comentario,
-            'fecha_entrega' => now(),
-        ]);
+    // 🧾 Registrar la entrega
+    $entrega = Entrega::create([
+        'tarea_id'      => $tarea->id,
+        'alumno_id'     => $user->id,
+        'archivo'       => $path,
+        'comentario'    => $this->comentario,
+        'fecha_entrega' => now(),
+    ]);
 
-        // refrescar lista y estado
-        $this->uploadingFor = null;
-        $this->archivo = null;
-        $this->comentario = '';
-        $this->loadTareas();
+    // 🔄 Refrescar estado
+    $this->uploadingFor = null;
+    $this->archivo = null;
+    $this->comentario = '';
+    $this->loadTareas();
 
     session()->flash('success', 'Entrega subida correctamente.');
     $this->dispatch('entrega-uploaded', id: $entrega->id);
-    }
+}
+
 
     // obtener entregas del usuario para una tarea (usado en la vista)
     public function getEntregasForTarea($tareaId)
