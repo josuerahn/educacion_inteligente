@@ -33,15 +33,14 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // --------------------
 // Dashboard del Profesor y CRUD de tareas
 // --------------------
-
-Route::prefix('profesor')->middleware(['auth'])->name('profesor.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('profesor.dashboard');
-    })->name('dashboard');
-
-    Route::get('/tareas', function () {
-        return view('profesor.tareas');
-    })->name('tareas');
+// Dashboard del Profesor y CRUD de tareas
+// --------------------
+Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
+    // Dashboard del profesor
+    Route::get('/dashboard', ProfesorDashboard::class)->name('dashboard');
+    
+    // Gestión de tareas
+    Route::get('/tareas', ProfesorTareas::class)->name('tareas');
 });
 
 // --------------------
