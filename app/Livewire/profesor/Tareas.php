@@ -6,22 +6,18 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Tarea;
 use App\Models\Tutoria;
-use App\Models\Entrega;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class Tareas extends Component
 {
     use WithFileUploads;
 
-    // Campos del formulario
-    public $titulo, $descripcion, $fecha_limite, $archivo;
-
-    // Estados del CRUD
+    public $titulo;
+    public $descripcion;
+    public $fecha_limite;
+    public $archivo;
     public $tareas;
     public $editTareaId = null;
-    public $verEntregasTareaId = null;
-    public $entregas = [];
 
     public function mount()
     {
@@ -42,29 +38,52 @@ class Tareas extends Component
             'archivo' => 'nullable|file|max:10240',
         ]);
 
-        $tutoriaId = Auth::user()->tutoria_id; // se asigna automáticamente
+        $profesor = Auth::user();
 
-        $archivoPath = $this->archivo ? $this->archivo->store('tareas', 'public') : null;
+        if (!$profesor->tutoria_id) {
+            session()->flash('error', 'No tienes una tutoría asignada.');
+            return;
+        }
+
+        $tutoria = Tutoria::find($profesor->tutoria_id);
+        if (!$tutoria) {
+            session()->flash('error', 'No se encontró la tutoría asignada.');
+            return;
+        }
+
+        $rutaArchivo = null;
+        if ($this->archivo) {
+            try {
+                // Guardar archivo en storage/app/public/tareas con nombre original
+                $rutaArchivo = $this->archivo->storeAs('tareas', $this->archivo->getClientOriginalName(), 'public');
+            } catch (\Exception $e) {
+                session()->flash('error', 'Error al guardar el archivo: ' . $e->getMessage());
+                return;
+            }
+        }
 
         Tarea::create([
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
             'fecha_limite' => $this->fecha_limite,
-            'archivo' => $archivoPath,
-            'profesor_id' => Auth::id(),
-            'tutoria_id' => $tutoriaId,
+            'archivo' => $rutaArchivo,
+            'profesor_id' => $profesor->id,
+            'tutoria_id' => $tutoria->id,
         ]);
-
-        session()->flash('success', 'Tarea creada correctamente.');
 
         $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo']);
         $this->cargarTareas();
+
+        session()->flash('success', 'Tarea creada correctamente.');
     }
 
     public function editarTarea($id)
     {
-        $tarea = Tarea::findOrFail($id);
-        $this->editTareaId = $id;
+        $tarea = Tarea::where('id', $id)
+            ->where('profesor_id', Auth::id())
+            ->firstOrFail();
+
+        $this->editTareaId = $tarea->id;
         $this->titulo = $tarea->titulo;
         $this->descripcion = $tarea->descripcion;
         $this->fecha_limite = $tarea->fecha_limite;
@@ -79,45 +98,64 @@ class Tareas extends Component
             'archivo' => 'nullable|file|max:10240',
         ]);
 
-        $tarea = Tarea::findOrFail($this->editTareaId);
-
-        if ($this->archivo) {
-            if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
-            $tarea->archivo = $this->archivo->store('tareas', 'public');
-        }
+        $tarea = Tarea::where('id', $this->editTareaId)
+            ->where('profesor_id', Auth::id())
+            ->firstOrFail();
 
         $tarea->titulo = $this->titulo;
         $tarea->descripcion = $this->descripcion;
         $tarea->fecha_limite = $this->fecha_limite;
-        $tarea->save();
 
-        session()->flash('success', 'Tarea actualizada correctamente.');
+        if ($this->archivo) {
+            try {
+                // Eliminar archivo anterior si existe
+                if ($tarea->archivo && \Storage::disk('public')->exists($tarea->archivo)) {
+                    \Storage::disk('public')->delete($tarea->archivo);
+                }
+
+                // Guardar nuevo archivo con nombre original
+                $rutaArchivo = $this->archivo->storeAs('tareas', $this->archivo->getClientOriginalName(), 'public');
+                $tarea->archivo = $rutaArchivo;
+
+            } catch (\Exception $e) {
+                session()->flash('error', 'Error al actualizar el archivo: ' . $e->getMessage());
+                return;
+            }
+        }
+
+        $tarea->save();
 
         $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo', 'editTareaId']);
         $this->cargarTareas();
+
+        session()->flash('success', 'Tarea actualizada correctamente.');
+    }
+
+    public function cancelarEdicion()
+    {
+        $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo', 'editTareaId']);
     }
 
     public function eliminarTarea($id)
     {
-        $tarea = Tarea::find($id);
-        if ($tarea && $tarea->profesor_id === Auth::id()) {
-            if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
-            $tarea->delete();
-            session()->flash('success', 'Tarea eliminada correctamente.');
-            $this->cargarTareas();
+        $tarea = Tarea::where('id', $id)
+            ->where('profesor_id', Auth::id())
+            ->firstOrFail();
+
+        // Eliminar archivo físico si existe
+        if ($tarea->archivo && \Storage::disk('public')->exists($tarea->archivo)) {
+            \Storage::disk('public')->delete($tarea->archivo);
         }
+
+        $tarea->delete();
+        $this->cargarTareas();
+
+        session()->flash('success', 'Tarea eliminada correctamente.');
     }
 
-    public function verEntregas($tareaId)
+    public function render()
     {
-        $this->verEntregasTareaId = $tareaId;
-        $this->entregas = Entrega::where('tarea_id', $tareaId)->with('alumno')->get();
+        return view('livewire.profesor.tareas')
+               ->layout('components.layouts.profesor');
     }
-
-   public function render()
-{
-    return view('livewire.profesor.tareas')
-           ->layout('components.layouts.profesor');
-}
-
 }

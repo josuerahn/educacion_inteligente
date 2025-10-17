@@ -1,17 +1,12 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up() {
-        Schema::create('tareas', function (Blueprint $table) {
+        Schema::create('profesor_tutoria', function (Blueprint $table) {
             $table->id();
-            $table->string('titulo');
-            $table->text('descripcion')->nullable();
-            $table->date('fecha_limite');
-            $table->string('archivo')->nullable();
             $table->foreignId('profesor_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('tutoria_id')->constrained('tutorias')->onDelete('cascade');
             $table->timestamps();
@@ -19,6 +14,7 @@ return new class extends Migration {
     }
 
     public function down() {
-        Schema::dropIfExists('tareas');
+        Schema::dropIfExists('profesor_tutoria');
     }
 };
+

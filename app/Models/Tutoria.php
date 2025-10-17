@@ -1,39 +1,27 @@
 <?php
+
 namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tutoria extends Model
 {
-    protected $fillable = ['name', 'description'];
+    use HasFactory;
 
-    public function profesores()
-    {
-        // Ahora usamos la tabla pivote profesor_tutoria para listar profesores asignados
-        return $this->belongsToMany(User::class, 'profesor_tutoria', 'tutoria_id', 'profesor_id')
-                    ->withPivot('capacity')
-                    ->where('role_id', 2);
-    }
-    public function alumnos()
-    {
-        return $this->hasMany(User::class, 'tutoria_id')->where('role_id', 3); // 3 = alumno
-    }
+    protected $fillable = [
+        'name',
+        'description',
+        'profesor_id',
+    ];
+
     public function profesor()
     {
-        return $this->belongsTo(\App\Models\User::class, 'profesor_id');
+        return $this->belongsTo(User::class, 'profesor_id');
     }
+
     public function tareas()
     {
-        return $this->hasMany(\App\Models\Tarea::class, 'tutoria_id');
-    }
-    public function entregas()
-    {
-        return $this->hasManyThrough(
-            \App\Models\Entrega::class,
-            \App\Models\Tarea::class,
-            'tutoria_id', // Foreign key on Tarea table...
-            'tarea_id',   // Foreign key on Entrega table...
-            'id',         // Local key on Tutoria table...
-            'id'          // Local key on Tarea table...
-        );
+        return $this->hasMany(Tarea::class);
     }
 }

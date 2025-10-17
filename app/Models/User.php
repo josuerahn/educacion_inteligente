@@ -33,11 +33,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
-    //relacion con cursos
-    public function course()
+    //relacion con tutorias
+    public function tutorias()
 {
-    return $this->belongsTo(Tutoria::class);
+    return $this->belongsToMany(Tutoria::class, 'profesor_tutoria', 'profesor_id', 'tutoria_id');
 }
+
 //relacion con redes sociales
 
     public function socialProfiles()
