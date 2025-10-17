@@ -19,7 +19,7 @@ class Tarea extends Model
 
     public function profesor()
     {
-        return $this->belongsTo(User::class, 'profesor_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function tutoria()

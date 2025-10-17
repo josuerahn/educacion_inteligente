@@ -5,6 +5,8 @@ namespace App\Livewire\Profesor;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Tarea;
+use App\Models\Tutoria;
+use App\Models\Entrega;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,15 +14,14 @@ class Tareas extends Component
 {
     use WithFileUploads;
 
-    // Variables públicas que se exponen a la vista
+    // Campos del formulario
+    public $titulo, $descripcion, $fecha_limite, $archivo;
+
+    // Estados del CRUD
     public $tareas;
-    public $titulo;
-    public $descripcion;
-    public $fecha_limite;
-    public $archivo;
     public $editTareaId = null;
     public $verEntregasTareaId = null;
-    public $entregas;
+    public $entregas = [];
 
     public function mount()
     {
@@ -38,13 +39,12 @@ class Tareas extends Component
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_limite' => 'required|date',
-            'archivo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'archivo' => 'nullable|file|max:10240',
         ]);
 
-        $archivoPath = null;
-        if ($this->archivo) {
-            $archivoPath = $this->archivo->store('tareas', 'public');
-        }
+        $tutoriaId = Auth::user()->tutoria_id; // se asigna automáticamente
+
+        $archivoPath = $this->archivo ? $this->archivo->store('tareas', 'public') : null;
 
         Tarea::create([
             'titulo' => $this->titulo,
@@ -52,9 +52,11 @@ class Tareas extends Component
             'fecha_limite' => $this->fecha_limite,
             'archivo' => $archivoPath,
             'profesor_id' => Auth::id(),
+            'tutoria_id' => $tutoriaId,
         ]);
 
         session()->flash('success', 'Tarea creada correctamente.');
+
         $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo']);
         $this->cargarTareas();
     }
@@ -62,7 +64,7 @@ class Tareas extends Component
     public function editarTarea($id)
     {
         $tarea = Tarea::findOrFail($id);
-        $this->editTareaId = $tarea->id;
+        $this->editTareaId = $id;
         $this->titulo = $tarea->titulo;
         $this->descripcion = $tarea->descripcion;
         $this->fecha_limite = $tarea->fecha_limite;
@@ -74,7 +76,7 @@ class Tareas extends Component
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_limite' => 'required|date',
-            'archivo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'archivo' => 'nullable|file|max:10240',
         ]);
 
         $tarea = Tarea::findOrFail($this->editTareaId);
@@ -90,29 +92,32 @@ class Tareas extends Component
         $tarea->save();
 
         session()->flash('success', 'Tarea actualizada correctamente.');
+
         $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo', 'editTareaId']);
         $this->cargarTareas();
     }
 
     public function eliminarTarea($id)
     {
-        $tarea = Tarea::findOrFail($id);
-        if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
-        $tarea->delete();
-
-        session()->flash('success', 'Tarea eliminada correctamente.');
-        $this->cargarTareas();
-    }
-
-    public function verEntregas($id)
-    {
-        $this->verEntregasTareaId = $id;
         $tarea = Tarea::find($id);
-        $this->entregas = $tarea->entregas ?? collect();
+        if ($tarea && $tarea->profesor_id === Auth::id()) {
+            if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
+            $tarea->delete();
+            session()->flash('success', 'Tarea eliminada correctamente.');
+            $this->cargarTareas();
+        }
     }
 
-    public function render()
+    public function verEntregas($tareaId)
     {
-        return view('livewire.profesor.tareas');
+        $this->verEntregasTareaId = $tareaId;
+        $this->entregas = Entrega::where('tarea_id', $tareaId)->with('alumno')->get();
     }
+
+   public function render()
+{
+    return view('livewire.profesor.tareas')
+           ->layout('components.layouts.profesor');
+}
+
 }

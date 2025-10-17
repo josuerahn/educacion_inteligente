@@ -11,25 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-      
-{
-    Schema::create('tareas', function (Blueprint $table) {
-        $table->id();
-        $table->string('titulo');
-        $table->text('descripcion')->nullable();
-        $table->date('fecha_limite');
-        $table->string('archivo')->nullable();
+        Schema::create('tareas', function (Blueprint $table) {
+            $table->id();
+            $table->string('titulo');
+            $table->text('descripcion')->nullable();
+            $table->date('fecha_limite'); // corregido nombre del campo
+            $table->string('archivo')->nullable();
 
-        // Relación con profesor
-        $table->foreignId('profesor_id')->constrained('users')->onDelete('cascade');
+            // Relación con profesor (usuario con rol de profesor)
+            $table->foreignId('profesor_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
 
-        // Relación con tutoria
-        $table->foreignId('tutoria_id')->constrained('tutorias')->onDelete('cascade');
+            // Relación con tutoría
+            $table->foreignId('tutoria_id')
+                  ->constrained('tutorias')
+                  ->onDelete('cascade');
 
-        $table->timestamps();
-    });
-}
-
+            $table->timestamps();
+        });
     }
 
     /**

@@ -1,10 +1,8 @@
 <?php
 
-use App\Livewire\Profesor\Tareas;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Profesor\TareaController;
 use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
 use App\Livewire\Profesor\Tareas as ProfesorTareas;
 use App\Livewire\Student\StudentDashboard;
@@ -32,18 +30,25 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // --------------------
 // Dashboard del Profesor y CRUD de tareas
 // --------------------
-Route::middleware(['auth'])->group(function () {
-    Route::view('/profesor/tareas', 'livewire.profesor.tareas')
-        ->name('profesor.tareas');
-});
+// --------------------
+// Dashboard del Profesor y CRUD de tareas
+// --------------------
 
+Route::prefix('profesor')->middleware(['auth'])->name('profesor.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('profesor.dashboard');
+    })->name('dashboard');
+
+    Route::get('/tareas', function () {
+        return view('profesor.tareas');
+    })->name('tareas');
+});
 
 // --------------------
 // Dashboard del Alumno con Livewire
 // --------------------
 Route::prefix('alumno')->middleware(['auth'])->name('student.')->group(function () {
-    Route::get('/dashboard', StudentDashboard::class)
-        ->name('student-dashboard');
+    Route::get('/dashboard', StudentDashboard::class)->name('student-dashboard');
 });
 
 // --------------------
