@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    {{-- Slot para que layouts hijos inyecten CSS/JS adicionales (Bootstrap, Chart.js, etc.) --}}
+    @yield('head')
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -23,8 +25,10 @@
     </style>
     @livewireStyles
 </head>
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-800">
+<body class="@yield('body-class','min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-800')">
     @yield('content')
     @livewireScripts
+    {{-- Slot para que las vistas inyecten scripts al final del body --}}
+    @yield('scripts')
 </body>
 </html>

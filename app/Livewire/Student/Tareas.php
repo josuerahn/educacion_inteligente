@@ -121,8 +121,8 @@ class Tareas extends Component
         $this->comentario = '';
         $this->loadTareas();
 
-        session()->flash('success', 'Entrega subida correctamente.');
-        $this->emit('entregaUploaded', $entrega->id);
+    session()->flash('success', 'Entrega subida correctamente.');
+    $this->dispatch('entrega-uploaded', id: $entrega->id);
     }
 
     // obtener entregas del usuario para una tarea (usado en la vista)

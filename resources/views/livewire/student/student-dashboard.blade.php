@@ -1,54 +1,4 @@
-<!doctype html>
-<html lang="es">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SICEP — Dashboard del Alumno</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-  <style>
-    body {
-      background: #f6f8fb;
-      color: #0f1724;
-    }
-
-    .card-rounded {
-      border-radius: 14px;
-    }
-
-    .avatar-circle {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      background: #e7f0ff;
-      color: #0b63d8;
-      font-size: 1.25rem;
-    }
-
-    .tutoria-card {
-      transition: transform .12s ease, box-shadow .12s ease;
-    }
-
-    .tutoria-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
-    }
-
-    .stat-number {
-      font-size: 1.35rem;
-      font-weight: 700;
-    }
-  </style>
-</head>
-
-<body>
+<div>
   <nav class="navbar navbar-light bg-white border-bottom mb-4">
     <div class="container-fluid">
       <div class="d-flex align-items-center gap-3">
@@ -250,6 +200,4 @@
       });
     })();
   </script>
-</body>
-
-</html>
+</div>

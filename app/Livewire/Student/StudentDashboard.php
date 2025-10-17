@@ -185,6 +185,89 @@ public function actualizarDatos()
     #[Layout('layouts.alumno')]
     public function render()
     {
+        // Preparar datos que la vista espera (mismo comportamiento que la ruta /alumno/dashboard)
+        $user = $this->alumno;
+        $tutoriasCollection = collect();
+        $perTutoria = [];
+        $studentStats = [
+            'total_tutorias' => 0,
+            'total_tareas' => 0,
+            'submitted' => 0,
+            'approved' => 0,
+            'avg_grade' => null,
+            'xp' => 0,
+        ];
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('tutorias')) {
+                $with = [];
+                if (\Illuminate\Support\Facades\Schema::hasTable('users')) $with[] = 'profesor';
+                if (\Illuminate\Support\Facades\Schema::hasTable('tareas')) $with[] = 'tareas';
+                $tutoriasCollection = \App\Models\Tutoria::with($with)->get();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('tareas')) {
+                $studentStats['total_tareas'] = \App\Models\Tarea::count();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('entregas')) {
+                $entregasAlumno = \App\Models\Entrega::where('alumno_id', $user->id)->get();
+                $studentStats['submitted'] = $entregasAlumno->count();
+                $grades = $entregasAlumno->pluck('calificacion')->filter(fn($v) => $v !== null);
+                $studentStats['avg_grade'] = $grades->count() ? round($grades->avg(), 2) : null;
+                $studentStats['approved'] = $grades->filter(fn($v) => $v >= 6)->count();
+                $studentStats['xp'] = (int)$entregasAlumno->sum(fn($e) => 50 + (floatval($e->calificacion ?? 0) * 10));
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable((new \App\Models\TutoriaSolicitud)->getTable())) {
+                $studentStats['total_tutorias'] = \App\Models\TutoriaSolicitud::where('alumno_id', $user->id)->count();
+            } else {
+                $studentStats['total_tutorias'] = $tutoriasCollection->count();
+            }
+
+            foreach ($tutoriasCollection as $t) {
+                $tareas = collect($t->tareas ?? []);
+                $total = $tareas->count();
+                $entregadas = 0;
+                if ($total && \Illuminate\Support\Facades\Schema::hasTable('entregas')) {
+                    $tareaIds = $tareas->pluck('id')->filter()->values()->all();
+                    if (!empty($tareaIds)) {
+                        $entregadas = \App\Models\Entrega::whereIn('tarea_id', $tareaIds)
+                                        ->where('alumno_id', $user->id)
+                                        ->count();
+                    }
+                }
+                $percent = $total ? round(($entregadas / $total) * 100) : 0;
+
+                $prof = $t->profesor ?? null;
+                $profData = null;
+                if ($prof) {
+                    $profData = [
+                        'name' => $prof->name ?? null,
+                        'photo' => $prof->profile_photo_url ?? null,
+                    ];
+                }
+
+                $perTutoria[] = [
+                    'id' => $t->id ?? 't_'.$t->nombre ?? uniqid(),
+                    'nombre' => $t->nombre ?? $t->name ?? 'Tutoría',
+                    'total_tareas' => $total,
+                    'entregadas' => $entregadas,
+                    'percent' => $percent,
+                    'profesor' => $profData,
+                ];
+            }
+
+            if ($tutoriasCollection->isEmpty()) {
+                $demo = ['Programación','Metodología','Matemáticas','Comunicación','Desarrollo web'];
+                foreach ($demo as $i => $n) {
+                    $perTutoria[] = ['id'=>'t_'.$i,'nombre'=>$n,'total_tareas'=>3,'entregadas'=>0,'percent'=>0,'profesor'=>null];
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Alumno dashboard (Livewire) error: '.$e->getMessage());
+        }
+
         $profesor = User::where('role_id', 2)
             ->where('tutoria_id', $this->alumno->tutoria_id)
             ->first();
@@ -192,7 +275,9 @@ public function actualizarDatos()
         return view('livewire.student.student-dashboard', [
             'alumno' => $this->alumno,
             'profesor' => $profesor,
+            'tutoriasCollection' => $tutoriasCollection,
+            'perTutoria' => $perTutoria,
+            'studentStats' => $studentStats,
         ]);
-        
     }
 }

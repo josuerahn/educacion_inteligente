@@ -15,11 +15,11 @@
 
   <div class="row g-4">
     @forelse($tareas as $tarea)
-      @php
+          @php
         $deadline = $tarea->fecha_entrega ?? null;
         $fileUrl = !empty($tarea->archivo) ? route('student.tareas.download', $tarea->id) : null;
-        $prof = $tarea->tutoria->profesor ?? null;
-        $profPhoto = $prof->profile_photo_url ?? ($prof->profile_photo ? asset('storage/'.$prof->profile_photo) : null);
+          $prof = optional($tarea->tutoria)->profesor ?? null;
+          $profPhoto = optional($prof)->profile_photo_url ?? null;
         $entregas = \App\Models\Entrega::where('tarea_id',$tarea->id)->where('alumno_id', auth()->id())->orderBy('created_at','desc')->get();
       @endphp
 
@@ -38,7 +38,7 @@
                 <div>
                   <div class="fw-semibold">{{ $tarea->titulo ?? 'Tarea #' . $tarea->id }}</div>
                   <div class="small text-muted">{{ Str::limit($tarea->descripcion ?? '', 160) }}</div>
-                  <div class="small text-muted mt-1">Tutoría: {{ $tarea->tutoria->nombre ?? $tarea->tutoria->name ?? '—' }}</div>
+                    <div class="small text-muted mt-1">Tutoría: {{ optional($tarea->tutoria)->nombre ?? optional($tarea->tutoria)->name ?? '—' }}</div>
                 </div>
               </div>
             </div>
@@ -105,3 +105,14 @@
     @endforelse
   </div>
 </div>
+</div>
+
+<script>
+  window.addEventListener('entregaUploaded', function(e) {
+    const id = e.detail?.id;
+    // pequeña notificación visual
+    alert('Entrega subida correctamente (id: '+(id||'n/a')+').');
+    // opcional: recargar la página o actualizar parte del DOM
+    // location.reload();
+  });
+</script>

@@ -1,22 +1,11 @@
     <?php
 
-use App\Livewire\Profesor\Tareas;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Profesor\TareaController;
-use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
-use App\Livewire\Profesor\Tareas as ProfesorTareas;
-use App\Livewire\Student\StudentDashboard;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
-use App\Models\Tutoria;
-use App\Models\Tarea;
-use App\Models\Entrega;
-use App\Models\TutoriaSolicitud;
-use App\Models\User;
-use App\Http\Controllers\IAController;
-use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\Auth\RegisterController;
+    use App\Http\Controllers\Auth\LoginController;
+    use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
+    use App\Livewire\Profesor\Tareas as ProfesorTareas;
+    use App\Livewire\Student\StudentDashboard;
 
     // --------------------
     // Página principal redirige al login
@@ -54,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     // --------------------
     // Dashboard del Profesor y CRUD de tareas
     // --------------------
+<<<<<<< HEAD
    Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
     // Dashboard del profesor
     Route::get('/dashboard', ProfesorDashboard::class)->name('dashboard');
@@ -66,12 +56,109 @@ Route::middleware(['auth'])->group(function () {
         return view('profesor.entregas', ['tareaId' => $tareaId]);
     })->name('entregas');
 });
+=======
+    Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
+        // Dashboard del profesor
+        Route::get('/dashboard', ProfesorDashboard::class)->name('dashboard');
+        
+        // Gestión de tareas
+        Route::get('/tareas', ProfesorTareas::class)->name('tareas');
+        
+    });
+>>>>>>> feature/login
 
     // --------------------
     // Dashboard del Alumno con Livewire
     // --------------------
     Route::prefix('alumno')->middleware(['auth'])->name('student.')->group(function () {
         Route::get('/dashboard', StudentDashboard::class)->name('student-dashboard');
+    });
+
+    // Rutas para tutorías públicas/soporte
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/tutorias', function () {
+            $alumnoId  = \Illuminate\Support\Facades\Auth::id();
+            $capacidad = 10;
+            $tutorias = \App\Models\Tutoria::with(['profesor','tareas'])->paginate(9);
+            $estadosAlumno = [];
+            if (\Illuminate\Support\Facades\Schema::hasTable((new \App\Models\TutoriaSolicitud)->getTable())) {
+                $estadosAlumno = \App\Models\TutoriaSolicitud::where('alumno_id', $alumnoId)->pluck('estado', 'tutoria_id');
+            }
+            $aceptadasPorTutoria = [];
+            if (\Illuminate\Support\Facades\Schema::hasTable((new \App\Models\TutoriaSolicitud)->getTable())) {
+                $aceptadasPorTutoria = \App\Models\TutoriaSolicitud::selectRaw('tutoria_id, COUNT(*) as c')
+                    ->where('estado','aceptada')
+                    ->groupBy('tutoria_id')
+                    ->pluck('c','tutoria_id');
+            }
+            return view('tutorias.index', compact('tutorias','capacidad','estadosAlumno','aceptadasPorTutoria'));
+        })->name('tutorias.index');
+
+        Route::post('/tutorias/{tutoria}/solicitar', function (\App\Models\Tutoria $tutoria) {
+            $alumnoId = \Illuminate\Support\Facades\Auth::id();
+            // inscripción directa: asignar la tutoria al alumno sin elegir profesor (si tu diseño lo permite)
+            $user = \App\Models\User::find($alumnoId);
+            if ($user) {
+                $user->tutoria_id = $tutoria->id;
+                $user->save();
+                return back()->with('ok','Inscripción realizada.');
+            }
+            return back()->with('error','No se pudo inscribir.');
+        })->name('tutorias.solicitar');
+
+        // Solicitar a un profesor concreto para una tutoria (formulario en tutorias.index)
+        Route::post('/tutorias/{tutoria}/profesor/{profesor}/solicitar', [\App\Http\Controllers\TutoriaProfesorController::class, 'solicitar'])
+            ->name('tutorias.profesor.solicitar');
+
+        // Descarga de archivos de una tarea (archivo subido por profesor)
+        Route::get('/tareas/{tarea}/descargar', function (\App\Models\Tarea $tarea) {
+            // Solo usuarios autenticados pueden descargar; además permitir si el alumno está inscrito o es profesor dueño
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (!$user) {
+                abort(403);
+            }
+
+            // Si la tarea no tiene archivo
+            if (empty($tarea->archivo)) {
+                abort(404);
+            }
+
+            // Permitir descarga si el usuario es profesor y es el autor (profesor_id) o si es alumno inscrito en la tutoria
+            $allowed = false;
+            if ($user->role_id == 2 && $tarea->profesor_id == $user->id) {
+                $allowed = true;
+            }
+            // comprobar inscripción del alumno (campo tutoria_id en users)
+            if ($user->role_id != 2 && $user->tutoria_id == $tarea->tutoria_id) {
+                $allowed = true;
+            }
+
+            if (! $allowed) {
+                abort(403);
+            }
+
+            $path = \Illuminate\Support\Facades\Storage::disk('public')->path($tarea->archivo);
+            return response()->download($path);
+        })->name('student.tareas.download');
+
+        // Descarga de archivos de una entrega (archivo subido por alumno)
+        Route::get('/entregas/{entrega}/descargar', function ($entregaId) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (!$user) abort(403);
+
+            $ent = \App\Models\Entrega::find($entregaId);
+            if (! $ent) abort(404);
+
+            // Permitir si es el alumno dueño o el profesor de la tarea
+            $allowed = false;
+            if ($user->id == $ent->alumno_id) $allowed = true;
+            if ($user->role_id == 2 && $user->id == optional($ent->tarea)->profesor_id) $allowed = true;
+
+            if (! $allowed) abort(403);
+
+            $path = \Illuminate\Support\Facades\Storage::disk('public')->path($ent->archivo);
+            return response()->download($path);
+        })->name('student.entregas.download');
     });
 
     // --------------------
@@ -159,3 +246,42 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('admin.dashboard')->with('error', 'No se pudo eliminar la Tutoria.');
         })->name('delete.tutoria');
     });
+<<<<<<< HEAD
+=======
+
+    // Rutas para que el profesor vea las entregas de una tarea y las califique
+    Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
+        Route::get('/entregas/{tarea}', function ($tareaId) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (! $user || $user->role_id != 2) abort(403);
+
+            $tarea = \App\Models\Tarea::with('tutoria')->find($tareaId);
+            if (! $tarea) abort(404);
+
+            // Opcional: verificar que el profesor es el profesor de la tutoria
+            if ($tarea->profesor_id && $tarea->profesor_id != $user->id) {
+                // Si no es el profesor autor, permitir si es administrador (role_id 1)
+                if ($user->role_id != 1) abort(403);
+            }
+
+            $entregas = \App\Models\Entrega::where('tarea_id', $tarea->id)->with('alumno')->orderBy('created_at','desc')->get();
+
+            return view('livewire.profesor.entregas', compact('tarea','entregas'));
+        })->name('entregas');
+
+        // Calificar una entrega (simple)
+        Route::post('/entregas/{entrega}/calificar', function (\Illuminate\Http\Request $request, $entregaId) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (! $user || $user->role_id != 2) abort(403);
+
+            $ent = \App\Models\Entrega::find($entregaId);
+            if (! $ent) abort(404);
+
+            $cal = intval($request->input('calificacion'));
+            $ent->calificacion = $cal;
+            $ent->save();
+
+            return back()->with('success', 'Entrega calificada.');
+        })->name('entregas.calificar');
+    });
+>>>>>>> feature/login
