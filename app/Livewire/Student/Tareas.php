@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
 use App\Models\TutoriaSolicitud;
 use App\Models\Tarea;
 use App\Models\Entrega;
@@ -31,7 +32,7 @@ class Tareas extends Component
 
     public function loadTareas()
     {
-        $user = auth()->user();
+    $user = Auth::user();
         if (! $user) {
             $this->tareas = [];
             return;
@@ -52,9 +53,10 @@ class Tareas extends Component
                 ? Tarea::with(['tutoria','tutoria.profesor'])->orderBy('created_at','desc')->get()
                 : collect([]);
         } else {
+            // Nota: la columna en la tabla de tareas es 'fecha_limite'
             $this->tareas = Tarea::whereIn('tutoria_id', $tutIds)
                 ->with(['tutoria','tutoria.profesor'])
-                ->orderBy('fecha_entrega','asc')
+                ->orderBy('fecha_limite','asc')
                 ->get();
         }
     }
@@ -78,7 +80,7 @@ class Tareas extends Component
     {
         $this->validate();
 
-        $user = auth()->user();
+    $user = Auth::user();
         if (! $user) {
             $this->addError('auth', 'Debe iniciar sesión.');
             return;
@@ -91,7 +93,7 @@ class Tareas extends Component
         }
 
         // opcional: verificar que alumno esté inscripto en la tutoria
-        if (method_exists(TutoriaSolicitud::class, 'where')) {
+        if (Schema::hasTable((new TutoriaSolicitud)->getTable())) {
             $isInscripto = TutoriaSolicitud::where('alumno_id', $user->id)
                 ->where('tutoria_id', $tarea->tutoria_id)
                 ->exists();
@@ -126,7 +128,7 @@ class Tareas extends Component
     // obtener entregas del usuario para una tarea (usado en la vista)
     public function getEntregasForTarea($tareaId)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         if (! $user) return collect([]);
         return Entrega::where('tarea_id', $tareaId)->where('alumno_id', $user->id)->orderBy('created_at','desc')->get();
     }

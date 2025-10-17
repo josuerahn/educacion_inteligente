@@ -105,4 +105,10 @@ class User extends Authenticatable
         $name = $this->name ?? 'Usuario';
         return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=0b63d8&color=fff&size=128';
     }
+
+    // Relación a la tutoria asignada individualmente (campo tutoria_id en usuarios)
+    public function tutoria()
+    {
+        return $this->belongsTo(\App\Models\Tutoria::class, 'tutoria_id');
+    }
 }

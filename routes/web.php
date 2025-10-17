@@ -221,6 +221,17 @@ Route::middleware(['auth'])->group(function () {
     
     // Profesor dashboard (Livewire)
     Route::get('/profesor/dashboard', \App\Livewire\Profesor\Dashboard::class)->name('profesor.dashboard');
+
+    // --- Descarga de archivos: tarea y entregas (para alumnos) ---
+    Route::get('/student/tareas/{tarea}/download', function (\App\Models\Tarea $tarea) {
+        if (! $tarea->archivo) abort(404);
+        return response()->download(storage_path('app/public/'.$tarea->archivo));
+    })->name('student.tareas.download');
+
+    Route::get('/student/entregas/{entrega}/download', function (\App\Models\Entrega $entrega) {
+        if (! $entrega->archivo) abort(404);
+        return response()->download(storage_path('app/public/'.$entrega->archivo));
+    })->name('student.entregas.download');
 });
 //----------------
 

@@ -174,26 +174,8 @@
             </div>
 
             <div class="col-12">
-              <div class="card p-3">
-                <h6 class="mb-2">Tutorías</h6>
-                <div class="row g-3">
-                  @foreach($perTutoria as $t)
-                  <div class="col-12">
-                    <div class="d-flex align-items-center justify-content-between tutoria-card p-3 card-rounded" style="background:#fff;">
-                      <div>
-                        <div class="fw-semibold">{{ $t['nombre'] }}</div>
-                        <div class="small text-muted">Tareas: {{ $t['total_tareas'] }} · Entregadas: {{ $t['entregadas'] }}</div>
-                      </div>
-                      <div style="width:260px">
-                        <div class="progress" style="height:10px">
-                          <div class="progress-bar" role="progressbar" style="width: {{ intval($t['percent']) }}%;" aria-valuenow="{{ intval($t['percent']) }}" aria-valuemin="0" aria-valuemax="100">{{ intval($t['percent']) }}%</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  @endforeach
-                </div>
-              </div>
+              {{-- Incluir componente de tareas para que el alumno vea y suba entregas --}}
+              @livewire('student.tareas')
             </div>
 
           </div>
