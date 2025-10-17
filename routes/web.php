@@ -1,11 +1,22 @@
     <?php
 
-    use Illuminate\Support\Facades\Route;
-    use App\Http\Controllers\Auth\RegisterController;
-    use App\Http\Controllers\Auth\LoginController;
-    use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
-    use App\Livewire\Profesor\Tareas as ProfesorTareas;
-    use App\Livewire\Student\StudentDashboard;
+use App\Livewire\Profesor\Tareas;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Profesor\TareaController;
+use App\Livewire\Profesor\Dashboard as ProfesorDashboard;
+use App\Livewire\Profesor\Tareas as ProfesorTareas;
+use App\Livewire\Student\StudentDashboard;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
+use App\Models\Tutoria;
+use App\Models\Tarea;
+use App\Models\Entrega;
+use App\Models\TutoriaSolicitud;
+use App\Models\User;
+use App\Http\Controllers\IAController;
+use Illuminate\Support\Facades\Auth;
 
     // --------------------
     // Página principal redirige al login
@@ -15,6 +26,12 @@
     });
 
 
+//IA
+Route::middleware(['auth'])->group(function () {
+  Route::post('/profesor/ia/plan/{alumnoTutoria}', [IAController::class,'generarPlan'])->name('profesor.ia.plan');
+  Route::get('/alumno/tutor-ia/{alumnoTutoria}', [IAController::class,'panelAlumno'])->name('alumno.tutor-ia');
+});
+// --------------------
 
     // --------------------
     // Autenticación
