@@ -24,11 +24,16 @@ class Tarea extends Model
 
     public function tutoria()
     {
-        return $this->belongsTo(Tutoria::class);
+        return $this->belongsTo(\App\Models\Tutoria::class, 'tutoria_id');
     }
 
     public function entregas()
     {
-       // return $this->hasMany(Entrega::class);
+        return $this->hasMany(\App\Models\Entrega::class, 'tarea_id');
+    }
+
+    public function creador()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'profesor_id');
     }
 }
