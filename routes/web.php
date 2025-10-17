@@ -37,14 +37,18 @@
     // --------------------
     // Dashboard del Profesor y CRUD de tareas
     // --------------------
-    Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
-        // Dashboard del profesor
-        Route::get('/dashboard', ProfesorDashboard::class)->name('dashboard');
-        
-        // Gestión de tareas
-        Route::get('/tareas', ProfesorTareas::class)->name('tareas');
-        
-    });
+   Route::middleware(['auth'])->prefix('profesor')->name('profesor.')->group(function () {
+    // Dashboard del profesor
+    Route::get('/dashboard', ProfesorDashboard::class)->name('dashboard');
+    
+    // Gestión de tareas
+    Route::get('/tareas', ProfesorTareas::class)->name('tareas');
+    
+    // Ver entregas de una tarea específica
+    Route::get('/tareas/{tareaId}/entregas', function ($tareaId) {
+        return view('profesor.entregas', ['tareaId' => $tareaId]);
+    })->name('entregas');
+});
 
     // --------------------
     // Dashboard del Alumno con Livewire

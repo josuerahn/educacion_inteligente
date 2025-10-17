@@ -37,4 +37,5 @@ class Entrega extends Model
         // usar alumno_id (coincide con $fillable)
         return $this->belongsTo(\App\Models\User::class, 'alumno_id');
     }
+    
 }
