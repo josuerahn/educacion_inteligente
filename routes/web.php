@@ -15,6 +15,7 @@ use App\Models\Tarea;
 use App\Models\Entrega;
 use App\Models\TutoriaSolicitud;
 use App\Models\User;
+use App\Http\Controllers\IAController;
 use Illuminate\Support\Facades\Auth;
 
 // --------------------
@@ -170,6 +171,12 @@ Route::prefix('alumno')->middleware(['auth'])->name('student.')->group(function 
 });
 
 
+//IA
+Route::middleware(['auth'])->group(function () {
+  Route::post('/profesor/ia/plan/{alumnoTutoria}', [IAController::class,'generarPlan'])->name('profesor.ia.plan');
+  Route::get('/alumno/tutor-ia/{alumnoTutoria}', [IAController::class,'panelAlumno'])->name('alumno.tutor-ia');
+});
+// --------------------
 
 // Tutorias
 Route::middleware(['auth'])->group(function () {
