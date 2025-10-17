@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Tarea;
 use App\Models\Tutoria;
-use App\Models\Entrega;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,14 +13,12 @@ class Tareas extends Component
 {
     use WithFileUploads;
 
-    // Campos del formulario
-    public $titulo, $descripcion, $fecha_limite, $archivo;
-
-    // Estados del CRUD
+    public $titulo;
+    public $descripcion;
+    public $fecha_limite;
+    public $archivo;
     public $tareas;
     public $editTareaId = null;
-    public $verEntregasTareaId = null;
-    public $entregas = [];
 
     public function mount()
     {
@@ -42,82 +39,52 @@ class Tareas extends Component
             'archivo' => 'nullable|file|max:10240',
         ]);
 
-        $tutoriaId = Auth::user()->tutoria_id; // se asigna automáticamente
+        $profesor = Auth::user();
 
-        $archivoPath = $this->archivo ? $this->archivo->store('tareas', 'public') : null;
+        $tutoria = Tutoria::where('profesor_id', $profesor->id)->first();
+        if (!$tutoria) {
+            session()->flash('error', 'No se encontró tutoría asignada al profesor.');
+            return;
+        }
+
+        $rutaArchivo = null;
+        if ($this->archivo) {
+            $archivoOriginal = $this->archivo->getClientOriginalName();
+            $rutaArchivo = $this->archivo->storeAs('tareas', $archivoOriginal, 'public');
+        }
 
         Tarea::create([
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
             'fecha_limite' => $this->fecha_limite,
-            'archivo' => $archivoPath,
-            'profesor_id' => Auth::id(),
-            'tutoria_id' => $tutoriaId,
+            'archivo' => $rutaArchivo,
+            'profesor_id' => $profesor->id,
+            'tutoria_id' => $tutoria->id,
         ]);
-
-        session()->flash('success', 'Tarea creada correctamente.');
 
         $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo']);
         $this->cargarTareas();
-    }
 
-    public function editarTarea($id)
-    {
-        $tarea = Tarea::findOrFail($id);
-        $this->editTareaId = $id;
-        $this->titulo = $tarea->titulo;
-        $this->descripcion = $tarea->descripcion;
-        $this->fecha_limite = $tarea->fecha_limite;
-    }
-
-    public function actualizarTarea()
-    {
-        $this->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'fecha_limite' => 'required|date',
-            'archivo' => 'nullable|file|max:10240',
-        ]);
-
-        $tarea = Tarea::findOrFail($this->editTareaId);
-
-        if ($this->archivo) {
-            if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
-            $tarea->archivo = $this->archivo->store('tareas', 'public');
-        }
-
-        $tarea->titulo = $this->titulo;
-        $tarea->descripcion = $this->descripcion;
-        $tarea->fecha_limite = $this->fecha_limite;
-        $tarea->save();
-
-        session()->flash('success', 'Tarea actualizada correctamente.');
-
-        $this->reset(['titulo', 'descripcion', 'fecha_limite', 'archivo', 'editTareaId']);
-        $this->cargarTareas();
+        session()->flash('success', 'Tarea creada correctamente.');
     }
 
     public function eliminarTarea($id)
     {
-        $tarea = Tarea::find($id);
-        if ($tarea && $tarea->profesor_id === Auth::id()) {
-            if ($tarea->archivo) Storage::disk('public')->delete($tarea->archivo);
-            $tarea->delete();
-            session()->flash('success', 'Tarea eliminada correctamente.');
-            $this->cargarTareas();
+        $tarea = Tarea::findOrFail($id);
+
+        if ($tarea->archivo && Storage::disk('public')->exists($tarea->archivo)) {
+            Storage::disk('public')->delete($tarea->archivo);
         }
+
+        $tarea->delete();
+        $this->cargarTareas();
+
+        session()->flash('success', 'Tarea eliminada correctamente.');
     }
 
-    public function verEntregas($tareaId)
+    public function render()
     {
-        $this->verEntregasTareaId = $tareaId;
-        $this->entregas = Entrega::where('tarea_id', $tareaId)->with('alumno')->get();
+        return view('livewire.profesor.tareas')
+               ->layout('components.layouts.profesor');
     }
-
-   public function render()
-{
-    return view('livewire.profesor.tareas')
-           ->layout('components.layouts.profesor');
-}
-
 }

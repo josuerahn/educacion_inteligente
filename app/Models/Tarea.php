@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,16 +20,11 @@ class Tarea extends Model
 
     public function profesor()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function tutoria()
     {
         return $this->belongsTo(Tutoria::class);
-    }
-
-    public function entregas()
-    {
-       // return $this->hasMany(Entrega::class);
     }
 }
