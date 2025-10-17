@@ -15,6 +15,7 @@ use App\Models\Tarea;
 use App\Models\Entrega;
 use App\Models\TutoriaSolicitud;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 // --------------------
 // Página principal redirige al login
@@ -95,7 +96,7 @@ Route::prefix('alumno')->middleware(['auth'])->name('student.')->group(function 
             }
 
             // total tutorías inscritas por el alumno (TutoriaSolicitud)
-            if (Schema::hasTable('tutoria_solicituds') || Schema::hasTable('tutoria_solicitud') || Schema::hasTable('tutoria_solicituds')) {
+            if (Schema::hasTable('tutoria_solicituds') || Schema::hasTable('tutoria_solicitud')) {
                 // intenta con el nombre correcto; usa modelo
                 $studentStats['total_tutorias'] = TutoriaSolicitud::where('alumno_id', $user->id)->count();
             } else {
