@@ -62,6 +62,19 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\SocialProfile::class);
     }
 
+    // Si este usuario es profesor, tutorias asignadas mediante la tabla pivote
+    public function tutoriasAsignadas()
+    {
+        return $this->belongsToMany(\App\Models\Tutoria::class, 'profesor_tutoria', 'profesor_id', 'tutoria_id')
+                    ->withPivot('capacity');
+    }
+
+    // Solicitudes que recibió este profesor (para revisar/aceptar)
+    public function solicitudesRecibidas()
+    {
+        return $this->hasMany(\App\Models\TutoriaSolicitud::class, 'profesor_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

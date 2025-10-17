@@ -209,6 +209,17 @@ Route::middleware(['auth'])->group(function () {
             ? 'Solicitud enviada. Esperá la aprobación del profesor.'
             : 'Ya tenés una solicitud para esta tutoría.');
     })->name('tutorias.solicitar');
+
+    // Solicitar a un profesor concreto (nuevo endpoint)
+    Route::post('/tutorias/{tutoria}/profesor/{profesor}/solicitar', [\App\Http\Controllers\TutoriaProfesorController::class, 'solicitar'])
+        ->name('tutorias.profesor.solicitar');
+
+    // Profesor responde a una solicitud
+    Route::post('/tutorias/solicitud/{solicitud}/responder', [\App\Http\Controllers\TutoriaProfesorController::class, 'responder'])
+        ->name('tutorias.solicitud.responder');
+    
+    // Profesor dashboard (Livewire)
+    Route::get('/profesor/dashboard', \App\Livewire\Profesor\Dashboard::class)->name('profesor.dashboard');
 });
 //----------------
 

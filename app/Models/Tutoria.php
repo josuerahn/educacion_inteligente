@@ -8,7 +8,10 @@ class Tutoria extends Model
 
     public function profesores()
     {
-        return $this->hasMany(User::class, 'tutoria_id')->where('role_id', 2); // 2 = profesor
+        // Ahora usamos la tabla pivote profesor_tutoria para listar profesores asignados
+        return $this->belongsToMany(User::class, 'profesor_tutoria', 'tutoria_id', 'profesor_id')
+                    ->withPivot('capacity')
+                    ->where('role_id', 2);
     }
     public function alumnos()
     {

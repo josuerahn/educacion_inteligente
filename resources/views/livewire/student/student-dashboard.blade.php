@@ -61,9 +61,13 @@
         </div>
       </div>
 
-      <div class="d-flex gap-2">
-        <a href="{{ route('student.demo') }}" class="btn btn-sm btn-outline-secondary">Vista demo</a>
+      <div class="d-flex align-items-center">
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar sesión</button>
+        </form>
       </div>
+
     </div>
   </nav>
 
@@ -113,7 +117,18 @@
             <div class="fw-semibold">{{ $studentStats['xp'] ?? 0 }} xp</div>
           </div>
         </div>
-
+<div class="card card-rounded shadow-sm p-3 mb-4">
+  <div class="d-flex align-items-center justify-content-between">
+    <div>
+      <h5 class="mb-0">Inscribirme a Tutorías</h5>
+      <small class="text-muted">Ver profesores, horarios y cupos</small>
+    </div>
+    <a href="{{ route('tutorias.index') }}" class="btn btn-primary">
+      Ver tutorías disponibles
+    </a>
+  </div>
+</div>
+       
         <div class="card card-rounded shadow-sm p-3">
           <h6 class="mb-2">Detalles rápidos</h6>
           <ul class="list-unstyled small text-muted mb-0">
@@ -131,17 +146,7 @@
       </aside>
 
       <!-- ACCESO A TUTORÍAS -->
-<div class="card card-rounded shadow-sm p-3 mb-4">
-  <div class="d-flex align-items-center justify-content-between">
-    <div>
-      <h5 class="mb-0">Inscribirme a Tutorías</h5>
-      <small class="text-muted">Ver profesores, horarios y cupos</small>
-    </div>
-    <a href="{{ route('tutorias.index') }}" class="btn btn-primary">
-      Ver tutorías disponibles
-    </a>
-  </div>
-</div>
+
 
 
       <!-- MAIN -->
@@ -180,7 +185,7 @@
                       </div>
                       <div style="width:260px">
                         <div class="progress" style="height:10px">
-                          <div class="progress-bar" role="progressbar" style="width: {{ $t['percent'] }}%;" aria-valuenow="{{ $t['percent'] }}" aria-valuemin="0" aria-valuemax="100">{{ $t['percent'] }}%</div>
+                          <div class="progress-bar" role="progressbar" style="width: {{ intval($t['percent']) }}%;" aria-valuenow="{{ intval($t['percent']) }}" aria-valuemin="0" aria-valuemax="100">{{ intval($t['percent']) }}%</div>
                         </div>
                       </div>
                     </div>
@@ -200,9 +205,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // datos del servidor (Blade -> JS)
-    window.SICEP_USER_STATS = @json($studentStats);
-    window.SICEP_PER_TUTORIA = @json($perTutoria);
+  // datos del servidor (Blade -> JS)
+  window.SICEP_USER_STATS = <?php echo json_encode($studentStats ?? []); ?>;
+  window.SICEP_PER_TUTORIA = <?php echo json_encode($perTutoria ?? []); ?>;
 
     (function() {
       const stats = window.SICEP_USER_STATS || {};

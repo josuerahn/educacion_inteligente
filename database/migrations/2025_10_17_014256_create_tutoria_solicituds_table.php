@@ -10,9 +10,11 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('tutoria_id')->constrained()->cascadeOnDelete();
             $table->foreignId('alumno_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('estado', ['pendiente', 'aceptada', 'rechazada'])->default('pendiente');
+            // profesor solicitado/asignado
+            $table->foreignId('profesor_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->enum('estado', ['pendiente','aceptada','rechazada'])->default('pendiente');
             $table->timestamps();
-            $table->unique(['tutoria_id', 'alumno_id']);
+            $table->unique(['tutoria_id','alumno_id']);
         });
     }
 
