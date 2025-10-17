@@ -31,7 +31,7 @@
       </div>
 
       <div class="d-flex gap-2">
-  <a href="{{ route('student.dashboard') }}" class="btn btn-sm btn-outline-secondary">dashboard</a>
+  <a href="{{ route('student.student-dashboard') }}" class="btn btn-sm btn-outline-secondary">dashboard</a>
         <a href="#" class="btn btn-sm btn-light border">Ayuda</a>
       </div>
     </div>
@@ -155,10 +155,13 @@
                     $materia = is_object($t) ? ($t->materia ?? null) : null;
                     $prof = is_object($t) ? ($t->profesor ?? null) : (is_array($t) ? ($t['profesor'] ?? null) : null);
                     $profName = is_object($prof) ? ($prof->name ?? null) : (is_array($prof) ? ($prof['name'] ?? null) : null);
-                    $profPhoto = null;
-                    if (is_object($prof) && isset($prof->profile_photo_url)) { $profPhoto = $prof->profile_photo_url; }
-                    elseif (is_object($prof) && !empty($prof->profile_photo)) { $profPhoto = asset('storage/'.$prof->profile_photo); }
-                    elseif (is_array($prof) && !empty($prof['profile_photo'])) { $profPhoto = asset('storage/'.$prof['profile_photo']); }
+          $profPhoto = null;
+          if (is_object($prof)) {
+            // usar el accessor si existe
+            $profPhoto = $prof->profile_photo_url ?? null;
+          } elseif (is_array($prof) && !empty($prof['profile_photo'])) {
+            $profPhoto = asset('storage/'.$prof['profile_photo']);
+          }
                     $horario = is_object($t) ? ($t->horario ?? null) : null;
                     $cupos = is_object($t) ? ($t->cupos ?? null) : null;
                     $tareasCount = is_object($t) && isset($t->tareas) ? count($t->tareas) : 0;
@@ -191,10 +194,30 @@
                             </div>
                           </div>
 
-                          <div class="mt-3 d-flex gap-2">
+                            @php
+                              // Verificar si hay profesores con cupo para mostrar el botón de inscribirse
+                              $hasAvailable = false;
+                              if (is_object($t) && method_exists($t, 'profesores')) {
+                                  $profs = $t->profesores()->get();
+                                  $availableProfs = $profs->filter(function($p) use ($t) {
+                                      $cap = $p->pivot->capacity ?? 10;
+                                      $aceptadas = \App\Models\TutoriaSolicitud::where('tutoria_id', $t->id)
+                                          ->where('profesor_id', $p->id)
+                                          ->where('estado','aceptada')
+                                          ->count();
+                                      return $aceptadas < $cap;
+                                  });
+                                  $hasAvailable = $availableProfs->isNotEmpty();
+                              }
+                            @endphp
+                            <div class="mt-3 d-flex gap-2">
                             <div class="d-flex gap-2 align-items-center">
-                              <button class="btn btn-primary btn-solicitar btn-lg-sm" data-key="{{ $key }}">Solicitar </button>
-                              <button class="btn btn-outline-secondary btn-cancelar btn-lg-sm d-none" data-key="{{ $key }}">Cancelar</button>
+                              @if($hasAvailable)
+                                <button class="btn btn-primary btn-solicitar btn-lg-sm" data-key="{{ $key }}">Inscribirse</button>
+                                <button class="btn btn-outline-secondary btn-cancelar btn-lg-sm d-none" data-key="{{ $key }}">Cancelar</button>
+                              @else
+                                <span class="badge bg-secondary">Sin cupos</span>
+                              @endif
                             </div>
                             <div class="ms-3">
                               <small class="text-muted">Horario: {{ $horario ?? 'A coordinar' }} · Cupos: {{ $cupos ?? '—' }}</small>
@@ -234,7 +257,8 @@
                                         </div>
                                       </div>
                                       <div class="d-flex gap-2">
-                                        <a href="{{ route('tutorias.solicitar') }}" class="btn btn-sm btn-outline-secondary">Ver perfil</a>
+                                        {{-- Enlace al perfil del profesor (si tuvieras ruta) - por ahora redirige al dashboard del profesor o muestra '#'. Ajusta según tus rutas. --}}
+                                        <a href="{{ url('/profesor/dashboard') }}" class="btn btn-sm btn-outline-secondary">Ver perfil</a>
                                         <form action="{{ route('tutorias.profesor.solicitar', [$t->id, $p->id]) }}" method="POST" style="display:inline">
                                           @csrf
                                           <button class="btn btn-sm btn-primary">Solicitar a profesor</button>

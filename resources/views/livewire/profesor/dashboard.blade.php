@@ -9,19 +9,27 @@
         </div>
 
         {{-- Perfil del Profesor --}}
+    @php
+        $profUser = auth()->user();
+        $profName = $profUser->name ?? 'Profesor';
+        $profEmail = $profUser->email ?? null;
+        $profPhotoUrl = null;
+        if ($profUser && !empty($profUser->profile_photo)) {
+            $profPhotoUrl = asset('storage/'.$profUser->profile_photo);
+        } else {
+            $profPhotoUrl = 'https://ui-avatars.com/api/?name='.urlencode($profName);
+        }
+    @endphp
+
     <div class="bg-white rounded-xl shadow p-6 flex flex-col sm:flex-row items-center gap-6 mb-8 w-full">
             <img
-                src="{{ auth()->user()->profile_photo
-                    ? asset('storage/'.auth()->user()->profile_photo)
-                    : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name) }}"
+                src="{{ $profPhotoUrl }}"
                 class="w-20 h-20 rounded-full object-cover border-2 border-blue-500 cursor-pointer"
-                wire:click="verFotoPerfil('{{ auth()->user()->profile_photo
-                    ? asset('storage/'.auth()->user()->profile_photo)
-                    : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name) }}')">
+                wire:click="verFotoPerfil('{{ $profPhotoUrl }}')">
 
             <div class="text-center sm:text-left w-full">
-                <p class="font-bold text-xl text-blue-700">{{ auth()->user()->name }}</p>
-                <p class="text-gray-600">{{ auth()->user()->email }}</p>
+                <p class="font-bold text-xl text-blue-700">{{ $profName }}</p>
+                <p class="text-gray-600">{{ $profEmail ?? '' }}</p>
                 <div class="flex flex-col sm:flex-row gap-2 mt-2 justify-center sm:justify-start w-full">
                     <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full sm:w-auto" wire:click="editarPerfil">
                         Editar Perfil
@@ -60,7 +68,7 @@
                     <li>
                         <a href="?ver={{ $sug->id }}#detalle-alumno"
                             class="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
-                            <img src="{{ $sug->profile_photo ? asset('storage/'.$sug->profile_photo) : 'https://ui-avatars.com/api/?name='.urlencode($sug->name) }}"
+                            <img src="{{ $sug->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($sug->name) }}"
                                 class="w-8 h-8 rounded-full object-cover">
                             <span>{{ $sug->name }} ({{ $sug->email }})</span>
                         </a>
@@ -93,14 +101,11 @@
                         @foreach($alumnos as $alumno)
                         <tr class="border-b hover:bg-gray-50">
                             <td class="p-3">
+                                @php $alumnoPhoto = $alumno->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($alumno->name); @endphp
                                 <img
-                                    src="{{ $alumno->profile_photo
-                                            ? asset('storage/'.$alumno->profile_photo)
-                                            : 'https://ui-avatars.com/api/?name='.urlencode($alumno->name) }}"
+                                    src="{{ $alumnoPhoto }}"
                                     class="w-12 h-12 rounded-full object-cover border-2 border-green-400 cursor-pointer"
-                                    wire:click="verFotoPerfil('{{ $alumno->profile_photo
-                                            ? asset('storage/'.$alumno->profile_photo)
-                                            : 'https://ui-avatars.com/api/?name='.urlencode($alumno->name) }}')">
+                                    wire:click="verFotoPerfil('{{ $alumnoPhoto }}')">
                             </td>
 
                             <td class="p-3 font-medium">{{ $alumno->name }}</td>
@@ -202,15 +207,12 @@
 
         {{-- Card de Detalle del Alumno --}}
         @if($alumnoSeleccionado)
-        <div class="mt-8 p-6 bg-white rounded-xl shadow flex flex-col md:flex-row gap-6 items-center">
-            <img
-                src="{{ $alumnoSeleccionado->profile_photo
-                        ? asset('storage/'.$alumnoSeleccionado->profile_photo)
-                        : 'https://ui-avatars.com/api/?name='.urlencode($alumnoSeleccionado->name) }}"
-                class="w-32 h-32 rounded-full object-cover border-2 border-green-400 cursor-pointer"
-                wire:click="verFotoPerfil('{{ $alumnoSeleccionado->profile_photo
-                        ? asset('storage/'.$alumnoSeleccionado->profile_photo)
-                        : 'https://ui-avatars.com/api/?name='.urlencode($alumnoSeleccionado->name) }}')">
+    <div class="mt-8 p-6 bg-white rounded-xl shadow flex flex-col md:flex-row gap-6 items-center">
+        @php $alSelPhoto = $alumnoSeleccionado->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($alumnoSeleccionado->name); @endphp
+        <img
+        src="{{ $alSelPhoto }}"
+        class="w-32 h-32 rounded-full object-cover border-2 border-green-400 cursor-pointer"
+        wire:click="verFotoPerfil('{{ $alSelPhoto }}')">
             <div>
                 <h2 class="text-xl font-bold mb-3 text-blue-700">Detalles del Alumno</h2>
                 <ul class="space-y-2">
