@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -62,6 +63,19 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\SocialProfile::class);
     }
 
+    // Si este usuario es profesor, tutorias asignadas mediante la tabla pivote
+    public function tutoriasAsignadas()
+    {
+        return $this->belongsToMany(\App\Models\Tutoria::class, 'profesor_tutoria', 'profesor_id', 'tutoria_id')
+                    ->withPivot('capacity');
+    }
+
+    // Solicitudes que recibió este profesor (para revisar/aceptar)
+    public function solicitudesRecibidas()
+    {
+        return $this->hasMany(\App\Models\TutoriaSolicitud::class, 'profesor_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -75,4 +89,27 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // Devuelve la URL pública de la foto de perfil o un avatar por defecto
+    public function getProfilePhotoUrlAttribute()
+    {
+        if (! empty($this->profile_photo)) {
+            // si ya es una URL absoluta la devolvemos
+            if (str_starts_with($this->profile_photo, 'http')) {
+                return $this->profile_photo;
+            }
+            // archivo guardado en storage/app/public/...
+            return Storage::disk('public')->url($this->profile_photo);
+        }
+
+        // fallback: avatar generado (ui-avatars)
+        $name = $this->name ?? 'Usuario';
+        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=0b63d8&color=fff&size=128';
+    }
+
+    // Relación a la tutoria asignada individualmente (campo tutoria_id en usuarios)
+    public function tutoria()
+    {
+        return $this->belongsTo(\App\Models\Tutoria::class, 'tutoria_id');
+    }
 }

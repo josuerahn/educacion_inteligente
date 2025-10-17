@@ -26,7 +26,7 @@ class Entrega extends Model
      */
     public function tarea()
     {
-        return $this->belongsTo(Tarea::class);
+        return $this->belongsTo(\App\Models\Tarea::class, 'tarea_id');
     }
 
     /**
@@ -34,6 +34,7 @@ class Entrega extends Model
      */
     public function alumno()
     {
-        return $this->belongsTo(User::class, 'alumno_id');
+        // usar alumno_id (coincide con $fillable)
+        return $this->belongsTo(\App\Models\User::class, 'alumno_id');
     }
 }

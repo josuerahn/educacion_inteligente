@@ -35,6 +35,10 @@ public ?string $notion    = null;
 
     public $nuevaFoto; // Para el archivo subido
 
+    // nuevas props para tutorías
+    public array $tutorias = [];
+    public ?string $selectedTutoria = null;
+
     protected $queryString = ['q'];
 
    public function mount()
@@ -59,6 +63,18 @@ public ?string $notion    = null;
             $this->wordpress = $sp->wordpress;
             $this->notion    = $sp->notion;
         }
+
+        // cargar tutorías disponibles (puedes cambiar por consulta a modelo Tutoria si lo prefieres)
+        $this->tutorias = [
+            'Programación',
+            'Metodología',
+            'Matemáticas',
+            'Comunicación',
+            'Desarrollo web',
+        ];
+
+        // valor guardado en el usuario (campo selected_tutoria)
+        $this->selectedTutoria = $this->alumno->selected_tutoria ?? null;
     }
 }
 
@@ -150,6 +166,20 @@ public function actualizarDatos()
             $this->alumno->refresh();
             session()->flash('mensaje', 'Foto de perfil actualizada.');
         }
+    }
+
+    public function elegirTutoria()
+    {
+        $this->validate([
+            'selectedTutoria' => ['required','string','max:255'],
+        ]);
+
+        $this->alumno->update([
+            'selected_tutoria' => $this->selectedTutoria,
+        ]);
+
+        $this->alumno->refresh();
+        session()->flash('mensaje', 'Te has anotado en: '.$this->selectedTutoria);
     }
 
     #[Layout('layouts.alumno')]

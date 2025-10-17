@@ -25,6 +25,6 @@ class Tarea extends Model
 
     public function tutoria()
     {
-        return $this->belongsTo(Tutoria::class);
+        return $this->belongsTo(\App\Models\Tutoria::class, 'tutoria_id');
     }
 }
