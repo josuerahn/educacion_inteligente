@@ -1,6 +1,3 @@
-@extends('layouts.app') {{-- o tu layout --}}
-@section('title','Tutorías disponibles')
-
 @section('content')
 <div class="container my-4">
   <div class="d-flex align-items-center justify-content-between mb-3">
@@ -15,67 +12,112 @@
     <div class="alert alert-success">{{ session('ok') }}</div>
   @endif
 
-  <div class="row g-3">
-    @forelse($tutorias as $t)
+  <div class="row g-4">
+    {{-- SIDEBAR (resumen simple) --}}
+    <aside class="col-12 col-lg-4">
       @php
-        $estadoAlumno = $estadosAlumno[$t->id] ?? null;             // pendiente | aceptada | rechazada | null
-        $aceptadas    = $aceptadasPorTutoria[$t->id] ?? 0;
-        $cuposRest    = max(($capacidad ?? 10) - $aceptadas, 0);
-        $disabled     = $cuposRest === 0 || in_array($estadoAlumno, ['pendiente','aceptada']);
-        $badge        = $estadoAlumno === 'aceptada' ? 'success' :
-                        ($estadoAlumno === 'pendiente' ? 'warning' :
-                        ($cuposRest===0 ? 'secondary' : 'light'));
-        $badgeText    = $estadoAlumno === 'aceptada' ? 'Aceptada' :
-                        ($estadoAlumno === 'pendiente' ? 'Pendiente' :
-                        ($cuposRest===0 ? 'Sin cupos' : 'Disponible'));
+        $total = $tutorias->total();
+        $pend = collect($estadosAlumno)->filter(fn($e)=>$e==='pendiente')->count();
+        $acep = collect($estadosAlumno)->filter(fn($e)=>$e==='aceptada')->count();
       @endphp
 
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card card-rounded tutoria-card">
-          <div class="card-body">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              @if($t->profesor && $t->profesor->profile_photo)
-                <img src="{{ asset('storage/'.$t->profesor->profile_photo) }}" class="rounded-circle" width="36" height="36" alt="">
-              @else
-                <div class="avatar-circle" style="width:36px;height:36px;font-size:.9rem;">
-                  {{ strtoupper(substr($t->profesor->name ?? 'P',0,1)) }}
-                </div>
-              @endif
-              <div class="small">
-                <div class="fw-semibold">{{ $t->name }}</div>
-                <div class="text-muted">{{ Str::limit($t->description ?? '—', 60) }}</div>
-              </div>
-              <span class="ms-auto badge text-bg-{{ $badge }}">{{ $badgeText }}</span>
+      <div class="card card-rounded shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-semibold">Resumen</h6>
+          <div class="row text-center mt-3">
+            <div class="col-4 border-end">
+              <div class="text-muted small">Total</div>
+              <div class="stat-number">{{ $total }}</div>
             </div>
-
-            <ul class="list-unstyled small text-muted mb-3">
-              <li><span class="text-dark">Profesor:</span> {{ $t->profesor->name ?? '—' }}</li>
-              <li><span class="text-dark">Horario/Agenda:</span> {{ $t->description ?? 'A coordinar' }}</li>
-              <li><span class="text-dark">Cupos:</span> {{ $cuposRest }} / {{ $capacidad ?? 10 }}</li>
-            </ul>
-
-            <form action="{{ route('tutorias.solicitar',$t) }}" method="POST">
-              @csrf
-              <button type="submit" class="btn btn-primary w-100" @disabled($disabled)>
-                @if($estadoAlumno === 'aceptada') Ya inscripto
-                @elseif($estadoAlumno === 'pendiente') En revisión…
-                @elseif($cuposRest === 0) Sin cupos
-                @else Anotarme
-                @endif
-              </button>
-            </form>
+            <div class="col-4 border-end">
+              <div class="text-muted small">Solicitadas</div>
+              <div class="stat-number text-warning">{{ $pend }}</div>
+            </div>
+            <div class="col-4">
+              <div class="text-muted small">Inscripto</div>
+              <div class="stat-number text-success">{{ $acep }}</div>
+            </div>
           </div>
         </div>
       </div>
-    @empty
-      <div class="col-12">
-        <div class="alert alert-light border">No hay tutorías disponibles por ahora.</div>
-      </div>
-    @endforelse
-  </div>
+    </aside>
 
-  <div class="mt-3">
-    {{ $tutorias->links() }}
-  </div>
-</div>
-@endsection
+    {{-- LISTA DE TUTORÍAS --}}
+    <section class="col-12 col-lg-8">
+      <div class="card card-rounded shadow-sm p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-0">Listado</h5>
+            <small class="text-muted">Profesor, horario y cupos</small>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          @forelse($tutorias as $t)
+            @php
+              $estadoAlumno = $estadosAlumno[$t->id] ?? null; // pendiente | aceptada | rechazada | null
+              $aceptadas    = $aceptadasPorTutoria[$t->id] ?? 0;
+              $capacidad    = $capacidad ?? 10;
+              $cuposRest    = max($capacidad - $aceptadas, 0);
+              $disabled     = $cuposRest === 0 || in_array($estadoAlumno, ['pendiente','aceptada']);
+              $badge        = $estadoAlumno === 'aceptada' ? 'success' :
+                              ($estadoAlumno === 'pendiente' ? 'warning' :
+                              ($cuposRest===0 ? 'secondary' : 'light'));
+              $badgeText    = $estadoAlumno === 'aceptada' ? 'Aceptada' :
+                              ($estadoAlumno === 'pendiente' ? 'Pendiente' :
+                              ($cuposRest===0 ? 'Sin cupos' : 'Disponible'));
+            @endphp
+
+            <div class="col-12">
+              <div class="card tutoria-card card-rounded p-4 h-100">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="flex-shrink-0">
+                    @if($t->profesor && $t->profesor->profile_photo)
+                      <img src="{{ asset('storage/'.$t->profesor->profile_photo) }}" class="rounded-circle" style="width:56px;height:56px;object-fit:cover;" alt="">
+                    @else
+                      <div class="avatar-circle" style="width:56px;height:56px;font-size:1rem;">
+                        {{ strtoupper(substr($t->name,0,1)) }}
+                      </div>
+                    @endif
+                  </div>
+
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="me-3">
+                        <h4 class="tutoria-title mb-1">{{ $t->name }}</h4>
+                        <div class="text-muted small">
+                          <div><strong>Profesor:</strong> {{ $t->profesor->name ?? '—' }}</div>
+                          <div><strong>Horario/Agenda:</strong> {{ $t->description ?? 'A coordinar' }}</div>
+                        </div>
+                      </div>
+                      <span class="badge text-bg-{{ $badge }}">{{ $badgeText }}</span>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                      <form action="{{ route('tutorias.solicitar',$t) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-lg-sm" @disabled($disabled)>
+                          @if($estadoAlumno === 'aceptada') Ya inscripto
+                          @elseif($estadoAlumno === 'pendiente') En revisión…
+                          @elseif($cuposRest === 0) Sin cupos
+                          @else Anotarme
+                          @endif
+                        </button>
+                      </form>
+
+                      <div class="ms-auto text-muted small align-self-center">
+                        Cupos: {{ $cuposRest }} / {{ $capacidad }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @empty
+            <div class="col-12">
+              <div class="alert alert-light border">No hay tutorías disponibles por ahora.</div>
+            </div>
+          @endforelse
+        </div>
+
+        <d
